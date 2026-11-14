@@ -31,19 +31,26 @@ import type {
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
-// ── Token Management ──
+// ── Token Management (Session-Only: Ends on Tab/Browser Close) ──
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem("orbit.token");
+  return window.sessionStorage.getItem("orbit.token");
 }
 
 export function setToken(token: string): void {
-  window.localStorage.setItem("orbit.token", token);
-  document.cookie = `orbit.token=${token}; path=/; max-age=2592000; SameSite=Lax`;
+  window.sessionStorage.setItem("orbit.token", token);
+  try {
+    window.localStorage.removeItem("orbit.token");
+  } catch {}
+  // Session cookie without max-age/Expires: browser discards on session end
+  document.cookie = `orbit.token=${token}; path=/; SameSite=Lax`;
 }
 
 export function clearToken(): void {
-  window.localStorage.removeItem("orbit.token");
+  try {
+    window.sessionStorage.removeItem("orbit.token");
+    window.localStorage.removeItem("orbit.token");
+  } catch {}
   document.cookie = `orbit.token=; path=/; max-age=0; SameSite=Lax`;
 }
 
@@ -132,14 +139,17 @@ export const api = {
     }),
 
   // Projects
-  projects: (orgId: string) =>
-    request<Project[]>(`/projects?org_id=${orgId}`),
+  projects: (orgId?: string) =>
+    request<Project[]>(orgId ? `/projects?org_id=${encodeURIComponent(orgId)}` : "/projects"),
   project: (projectId: string) =>
     request<Project>(`/projects/${projectId}`),
-  createProject: (data: { org_id: string; name: string; platform: string; slug: string }) =>
+  createProject: (data: { org_id?: string; orgId?: string; name: string; platform: string; slug: string; environment?: string }) =>
     request<Project>("/projects", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        org_id: data.org_id || data.orgId || "",
+      }),
     }),
   updateProject: (projectId: string, data: Partial<Project>) =>
     request<Project>(`/projects/${projectId}`, {

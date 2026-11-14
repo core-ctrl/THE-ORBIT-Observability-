@@ -1,6 +1,46 @@
-node_modules
-.next
+# Dependencies
+node_modules/
+
+# Next.js build
+.next/
+out/
+build/
+dist/
+
+# Environment files and secrets
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+
+# Credentials & Keys
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.id_rsa
+*.id_ecdsa
+*.id_ed25519
+
+# Build and runtime logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
 tsconfig.tsbuildinfo
-__backend_build__
+
+# Backend build artifacts
+__backend_build__/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.swp

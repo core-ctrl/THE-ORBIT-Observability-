@@ -40,7 +40,9 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
     if (value === "") return;
     try {
       const project = await api.project(projectId);
-      await ingest.metrics(project.dsn_key, { name, value: Number(value), type });
+      const dsnKey = project.dsn_key || project.dsnKey;
+      if (!dsnKey) return;
+      await ingest.metrics(dsnKey, { name, value: Number(value), type });
       setIsModalOpen(false);
       setName("");
       setValue("");
@@ -61,8 +63,8 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
   }, {});
 
   const renderSparkline = (metricList: any[]) => {
-    const sorted = [...metricList].reverse(); // oldest to newest
-    if (sorted.length < 2) return <div className="h-16 flex items-center justify-center text-text-muted text-xs">Waiting for more points...</div>;
+    const sorted = [...metricList].reverse();
+    if (sorted.length < 2) return <div className="h-16 flex items-center justify-center text-zinc-500 font-mono text-xs">Waiting for additional sample points...</div>;
     
     const values = sorted.map(s => s.value);
     const min = Math.min(...values);
@@ -76,7 +78,7 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
 
     return (
       <svg className="w-full h-16 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <polyline fill="none" stroke="#7c3aed" strokeWidth="2.5" points={pts} />
+        <polyline fill="none" stroke="#ffffff" strokeWidth="2.5" points={pts} />
       </svg>
     );
   };
@@ -86,22 +88,35 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 text-white animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">Custom Metrics</h1>
-          <p className="text-text-secondary text-sm mt-1">Real-time instrumentation counters, gauges, and timers reported by client SDKs</p>
+          <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1">
+            Telemetry Counters & Gauges
+          </p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-black shadow-sm">
+                <BarChart3 className="h-4 w-4" />
+              </span>
+              Custom Metrics
+            </h1>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded border border-white/15 bg-white/5 text-zinc-300">
+              {Object.keys(groupedMetrics).length} METRICS
+            </span>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex items-center gap-2">
           <button
             onClick={fetchMetrics}
-            className="bg-secondary hover:bg-hover border border-border text-text-primary p-2.5 rounded-xl transition-colors"
+            className="bg-zinc-950 border border-white/15 hover:border-white/30 text-white p-2.5 rounded-xl transition"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-glow transition-all"
+            className="bg-white text-black hover:bg-zinc-200 px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition"
           >
             <Plus className="w-4 h-4" /> Ingest Metric
           </button>
@@ -111,18 +126,18 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
       {Object.keys(groupedMetrics).length === 0 ? (
         <EmptyState 
           icon={BarChart3}
-          title="No custom metrics"
-          description="Send metrics via the ingest API to see dashboards appear here automatically."
+          title="No custom metrics recorded"
+          description="Send custom instrumentation counters or gauges via the telemetry API to automatically populate dashboards."
         >
-          <div className="bg-bg-primary border border-[var(--glass-border)] rounded-xl overflow-hidden mt-2">
-            <div className="bg-[var(--glass-bg-hover)] px-4 py-2 text-xs font-semibold text-[var(--text-secondary)] border-b border-[var(--glass-border)] flex items-center justify-between">
+          <div className="bg-black border border-white/10 rounded-xl overflow-hidden mt-4 text-left max-w-xl mx-auto">
+            <div className="bg-zinc-950 px-4 py-2 text-xs font-mono font-semibold text-zinc-400 border-b border-white/10 flex items-center justify-between">
               <span>cURL Integration</span>
-              <span className="text-xs font-mono text-[var(--accent)]">POST /api/v1/metrics</span>
+              <span className="text-zinc-500">POST /api/v1/metrics</span>
             </div>
-            <pre className="p-4 text-xs font-mono text-[var(--text-primary)] overflow-x-auto">
-              <code className="block text-[#DCDCAA]">curl -X POST <span className="text-[#CE9178]">{process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/metrics/YOUR_DSN_KEY</span> \</code>
-              <code className="block pl-4">-H <span className="text-[#CE9178]">"Content-Type: application/json"</span> \</code>
-              <code className="block pl-4">-d <span className="text-[#CE9178]">'&#123;"name": "sales", "value": 100, "type": "counter"&#125;'</span></code>
+            <pre className="p-4 text-xs font-mono text-zinc-300 overflow-x-auto leading-relaxed">
+              <code>curl -X POST http://localhost:8000/api/v1/metrics/YOUR_DSN_KEY \</code>
+              <code className="block pl-4">-H &quot;Content-Type: application/json&quot; \</code>
+              <code className="block pl-4">-d &apos;{JSON.stringify({ name: "checkout_throughput", value: 120, type: "counter" })}&apos;</code>
             </pre>
           </div>
         </EmptyState>
@@ -134,32 +149,32 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
             const peak = Math.max(...items.map((i: any) => i.value));
             
             return (
-              <div key={metricName} className="bg-card border border-border rounded-xl p-5 space-y-4 shadow-sm">
+              <div key={metricName} className="bg-zinc-950 border border-white/10 rounded-2xl p-5 space-y-4 hover:border-white/20 transition">
                 <div className="flex justify-between items-start gap-4">
                   <div className="min-w-0">
-                    <p className="font-semibold text-text-primary truncate">{metricName}</p>
-                    <div className="flex gap-1.5 mt-1">
-                      <Badge className="bg-secondary text-text-secondary border border-border text-[10px] uppercase font-bold tracking-wider">{latest.type}</Badge>
-                      <span className="text-xs text-text-muted">Updated {formatDistanceToNow(new Date(latest.timestamp), { addSuffix: true })}</span>
+                    <p className="font-semibold text-white text-sm truncate">{metricName}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="bg-black text-zinc-300 border border-white/10 text-[10px] uppercase font-mono px-2 py-0.5 rounded font-semibold">{latest.type}</span>
+                      <span className="text-xs font-mono text-zinc-500">Updated {formatDistanceToNow(new Date(latest.timestamp), { addSuffix: true })}</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-accent">{latest.value.toLocaleString()}</p>
-                    <p className="text-[10px] text-text-muted uppercase font-semibold">Latest Value</p>
+                  <div className="text-right font-mono">
+                    <p className="text-2xl font-bold text-white">{latest.value.toLocaleString()}</p>
+                    <p className="text-[10px] text-zinc-500 uppercase font-semibold">Latest</p>
                   </div>
                 </div>
 
                 {/* Graph */}
-                <div className="bg-secondary/20 border border-border/50 rounded-lg p-3">
+                <div className="bg-black border border-white/10 rounded-xl p-3">
                   {renderSparkline(items)}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono border-t border-white/10 pt-3 text-zinc-400">
                   <div>
-                    <span className="text-text-muted">Avg:</span> <span className="font-medium text-text-primary">{avg.toFixed(1)}</span>
+                    <span className="text-zinc-600">Mean:</span> <span className="font-semibold text-white">{avg.toFixed(1)}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-text-muted">Peak:</span> <span className="font-medium text-text-primary">{peak.toLocaleString()}</span>
+                    <span className="text-zinc-600">Peak:</span> <span className="font-semibold text-white">{peak.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -170,44 +185,46 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
 
       {/* Manual Ingest Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-md rounded-xl p-6 shadow-2xl relative">
-            <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2"><Layers className="text-accent w-5 h-5" /> Ingest Metric Point</h2>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-white/20 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
+              <Layers className="text-white w-4 h-4" /> Ingest Metric Point
+            </h2>
             <form onSubmit={handleIngestMetric} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Metric Name</label>
+                <label className="block text-xs font-mono text-zinc-400 mb-1">Metric Identifier</label>
                 <input
                   type="text"
-                  placeholder="e.g. checkout_flow_duration_ms"
+                  placeholder="e.g. queue_backlog_size"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full bg-black border border-white/15 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-white"
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Value</label>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">Value</label>
                   <input
                     type="number"
                     step="any"
                     placeholder="e.g. 150"
                     value={value}
                     onChange={(e) => setValue(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full bg-black border border-white/15 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-white"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Type</label>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">Metric Type</label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary outline-none"
+                    className="w-full bg-black border border-white/15 rounded-lg px-3 py-2 text-xs font-mono text-white outline-none focus:border-white cursor-pointer"
                   >
-                    <option value="counter">Counter</option>
-                    <option value="gauge">Gauge</option>
-                    <option value="histogram">Histogram</option>
+                    <option value="counter" className="bg-black text-white">Counter</option>
+                    <option value="gauge" className="bg-black text-white">Gauge</option>
+                    <option value="histogram" className="bg-black text-white">Histogram</option>
                   </select>
                 </div>
               </div>
@@ -215,15 +232,15 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-hover border border-border text-text-primary hover:bg-hover/80 px-4 py-2 rounded-lg text-sm font-semibold"
+                  className="bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white px-4 py-2 rounded-xl text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-semibold"
+                  className="bg-white text-black hover:bg-zinc-200 px-5 py-2 rounded-xl text-xs font-semibold"
                 >
-                  Submit
+                  Submit Point
                 </button>
               </div>
             </form>

@@ -6,10 +6,14 @@ import { WidgetFrame } from "@/components/widgets/WidgetFrame";
 import { useOrbitStore } from "@/store/orbitStore";
 
 export function CpuWidget({ onRemove }: { onRemove?: () => void }): JSX.Element {
-  const system = useOrbitStore((state) => state.system);
+  const cpuPercent = useOrbitStore((state) => state.system?.cpu_percent);
   return (
     <WidgetFrame title="CPU Usage" description="Host server CPU utilization percentage over time." onRemove={onRemove}>
-      {system ? <GaugeChart value={system.cpu_percent} /> : <EmptyState title="No CPU readings yet" description="Waiting for data..." />}
+      {cpuPercent !== undefined ? (
+        <GaugeChart value={cpuPercent} />
+      ) : (
+        <EmptyState title="No CPU readings yet" description="Waiting for data..." />
+      )}
     </WidgetFrame>
   );
 }

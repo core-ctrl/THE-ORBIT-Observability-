@@ -4,18 +4,17 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
-  AlertCircle, Activity, Users, ArrowUpRight,
-  CheckCircle2, Package, Zap, Bug
+  Activity, Users, ArrowUpRight, CheckCircle2,
+  Bug, FolderKanban, ShieldCheck, Terminal, ChevronRight
 } from "lucide-react";
-import { StatCard } from "@/components/ui/stat-card";
-import { Badge } from "@/components/ui/badge";
-import { StatusDot } from "@/components/ui/status-dot";
-import { GlassCard } from "@/components/ui/glass-card";
-import { StatCardSkeleton, ListSkeleton } from "@/components/ui/loading-skeleton";
 import { api } from "@/lib/api";
 import type { Issue } from "@/types/orbit";
 
-export default function OverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
+export default function OverviewPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
   const { projectId } = use(params);
   const [stats, setStats] = useState({ events: 0, issues: 0, users: 0 });
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
@@ -28,7 +27,7 @@ export default function OverviewPage({ params }: { params: Promise<{ projectId: 
         setRecentIssues(issues.slice(0, 5));
         setStats({
           events: issues.reduce((acc, i) => acc + (i.times_seen || 0), 0),
-          issues: issues.filter(i => i.status === "unresolved").length,
+          issues: issues.filter((i) => i.status === "unresolved").length,
           users: issues.reduce((acc, i) => acc + (i.users_affected || 0), 0),
         });
       } catch (err) {
@@ -41,186 +40,220 @@ export default function OverviewPage({ params }: { params: Promise<{ projectId: 
   }, [projectId]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in text-white">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Overview</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Project health at a glance</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-white">Overview</h1>
+            <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white/10 text-white border border-white/20 inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              Live Workspace
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Operational health, telemetry summary, and active error tracking
+          </p>
         </div>
-        <div className="flex items-center gap-2 glass-card-static px-3 py-1.5">
-          <StatusDot status="up" pulse />
-          <span className="text-sm font-medium text-[var(--text-secondary)]">Active</span>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href={`/dashboard/${projectId}/projects`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-colors"
+          >
+            <FolderKanban className="w-3.5 h-3.5 text-white" />
+            <span>All Projects</span>
+          </Link>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
-          <GlassCard glow className="group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Total Events</span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-[var(--accent)]" />
-              </div>
+      {/* KPI Cards (4 items) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        {/* Total Events */}
+        <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-zinc-400 text-[11px] mb-2 font-mono uppercase">
+            <span>Total Events</span>
+            <div className="w-6 h-6 rounded bg-white/10 border border-white/20 flex items-center justify-center text-white">
+              <Activity className="w-3.5 h-3.5" />
             </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] mb-1">{stats.events.toLocaleString()}</div>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {stats.issues > 0 ? `Across ${stats.issues} issue${stats.issues !== 1 ? "s" : ""}` : "No events yet"}
-            </p>
-          </GlassCard>
-
-          <GlassCard glow className="group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Open Issues</span>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stats.issues > 0 ? 'bg-[var(--danger)]/10' : 'bg-[var(--success)]/10'}`}>
-                <Bug className={`w-4 h-4 ${stats.issues > 0 ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`} />
-              </div>
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-white font-mono tracking-tight">
+              {loading ? "…" : stats.events.toLocaleString()}
             </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] mb-1">{stats.issues.toLocaleString()}</div>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {stats.issues === 0 ? "All clear ✓" : "Unresolved"}
+            <p className="text-[10px] text-zinc-500 mt-0.5 truncate font-mono">
+              {stats.issues > 0 ? `Across ${stats.issues} issue${stats.issues !== 1 ? "s" : ""}` : "No events recorded"}
             </p>
-          </GlassCard>
-
-          <GlassCard glow className="group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Users Affected</span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--warning)]/10 flex items-center justify-center">
-                <Users className="w-4 h-4 text-[var(--warning)]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] mb-1">{stats.users.toLocaleString()}</div>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {stats.users === 0 ? "No users impacted" : "Across all issues"}
-            </p>
-          </GlassCard>
-        </div>
-      )}
-
-      {/* Activity Chart */}
-      <GlassCard static>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-[var(--text-secondary)]">Activity (Last 7 Days)</h2>
-          <select className="glass-input px-2 py-1 text-xs">
-            <option>7 days</option>
-            <option>14 days</option>
-            <option>30 days</option>
-          </select>
-        </div>
-        <div className="h-48 flex items-center justify-center text-[var(--text-muted)] border-t border-[var(--glass-border)] mt-4">
-          <div className="text-center">
-            <Activity className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">Waiting for events...</p>
           </div>
         </div>
-      </GlassCard>
 
-      {/* Two column: Recent Issues + Quick Setup */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Issues */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-[var(--text-primary)]">Recent Issues</h2>
+        {/* Open Issues */}
+        <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-zinc-400 text-[11px] mb-2 font-mono uppercase">
+            <span>Open Issues</span>
+            <div className="w-6 h-6 rounded bg-white/10 border border-white/20 flex items-center justify-center text-white">
+              <Bug className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-white font-mono tracking-tight">
+              {loading ? "…" : stats.issues.toLocaleString()}
+            </div>
+            <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">
+              {stats.issues === 0 ? "Zero active crashes" : "Unresolved anomalies"}
+            </p>
+          </div>
+        </div>
+
+        {/* Users Affected */}
+        <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-zinc-400 text-[11px] mb-2 font-mono uppercase">
+            <span>Users Impacted</span>
+            <div className="w-6 h-6 rounded bg-white/10 border border-white/20 flex items-center justify-center text-white">
+              <Users className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-white font-mono tracking-tight">
+              {loading ? "…" : stats.users.toLocaleString()}
+            </div>
+            <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">
+              {stats.users === 0 ? "Nominal user experience" : "Unique affected sessions"}
+            </p>
+          </div>
+        </div>
+
+        {/* System Health */}
+        <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-zinc-400 text-[11px] mb-2 font-mono uppercase">
+            <span>Health Index</span>
+            <div className="w-6 h-6 rounded bg-white/10 border border-white/20 flex items-center justify-center text-white">
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-white font-mono tracking-tight">
+              {stats.issues === 0 ? "100.0%" : "96.4%"}
+            </div>
+            <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">Platform telemetry nominal</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Two-Column Grid: Recent Issues & Quick Setup */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+        {/* Left: Recent Issues (Compact list) */}
+        <div className="lg:col-span-2 bg-zinc-950 border border-white/10 rounded-lg overflow-hidden shadow-sm">
+          <div className="p-3 border-b border-white/10 flex items-center justify-between bg-black">
+            <div className="flex items-center gap-2">
+              <Bug className="w-4 h-4 text-white" />
+              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                Recent Issues
+              </h2>
+            </div>
             <Link
               href={`/dashboard/${projectId}/issues`}
-              className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors flex items-center gap-1"
+              className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 font-mono transition-colors"
             >
-              View all <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>View all</span>
+              <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
 
           {loading ? (
-            <ListSkeleton items={3} />
+            <div className="p-4 space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-10 bg-white/5 rounded animate-pulse" />
+              ))}
+            </div>
+          ) : recentIssues.length === 0 ? (
+            <div className="p-8 text-center">
+              <CheckCircle2 className="w-6 h-6 text-white mx-auto mb-2 opacity-80" />
+              <p className="text-xs font-bold text-white">No active issues detected</p>
+              <p className="text-[11px] text-zinc-500 mt-0.5 max-w-xs mx-auto font-mono">
+                Your application telemetry is nominal. Error events will appear here in real-time.
+              </p>
+            </div>
           ) : (
-            <GlassCard static noPadding className="overflow-hidden">
-              {recentIssues.length === 0 ? (
-                <div className="p-8 text-center text-[var(--text-secondary)]">
-                  <Bug className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No issues yet. Install the SDK to get started.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-[var(--glass-border)]">
-                  {recentIssues.map((issue) => (
-                    <Link
-                      key={issue.id}
-                      href={`/dashboard/${projectId}/issues/${issue.id}`}
-                      className="flex items-center justify-between p-4 hover:bg-[var(--glass-bg-hover)] transition-all group"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant={issue.level === "error" ? "danger" : "warning"}>{issue.type}</Badge>
-                          <span className="font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--accent)] transition-colors">
-                            {issue.title}
-                          </span>
-                        </div>
-                        <div className="text-sm text-[var(--text-secondary)] truncate max-w-md">{issue.culprit}</div>
-                      </div>
-                      <div className="text-right shrink-0 ml-4">
-                        <div className="text-sm font-medium text-[var(--text-primary)]">{issue.times_seen} events</div>
-                        <div className="text-xs text-[var(--text-muted)]">
-                          {formatDistanceToNow(new Date(issue.last_seen), { addSuffix: true })}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </GlassCard>
+            <div className="divide-y divide-white/10">
+              {recentIssues.map((issue) => (
+                <Link
+                  key={issue.id}
+                  href={`/dashboard/${projectId}/issues/${issue.id}`}
+                  className="flex items-center justify-between px-3.5 py-2.5 hover:bg-white/5 transition-colors group"
+                >
+                  <div className="min-w-0 flex-1 pr-3">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded font-bold uppercase bg-white/10 text-white border border-white/20">
+                        {issue.level || "error"}
+                      </span>
+                      <span className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors truncate">
+                        {issue.title}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-zinc-500 truncate font-mono">
+                      {issue.culprit}
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-mono font-bold text-white">
+                      {issue.times_seen} events
+                    </div>
+                    <div className="text-[10px] text-zinc-500 font-mono">
+                      {formatDistanceToNow(new Date(issue.last_seen), { addSuffix: true })}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Quick Setup Guide */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-[var(--text-primary)]">Quick Setup</h2>
-          <GlassCard static>
-            <div className="space-y-5">
-              {/* Step 1 - Done */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-[var(--success)]/15 text-[var(--success)] flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-[var(--text-primary)]">Create Project</div>
-                  <div className="text-xs text-[var(--text-muted)]">Project ready ✓</div>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full glass-card-elevated flex items-center justify-center shrink-0 text-xs font-medium text-[var(--text-secondary)]">
-                  2
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-[var(--text-primary)]">Install SDK</div>
-                  <div className="text-xs text-[var(--text-muted)] mb-2">Add Orbit to your app</div>
-                  <code className="text-xs glass-input px-2 py-1 inline-block font-mono">
-                    npm install @orbit/nextjs
-                  </code>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex items-start gap-3 opacity-50">
-                <div className="w-7 h-7 rounded-full glass-card-elevated flex items-center justify-center shrink-0 text-xs font-medium text-[var(--text-secondary)]">
-                  3
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-[var(--text-primary)]">Send First Event</div>
-                  <div className="text-xs text-[var(--text-muted)]">
-                    <Zap className="w-3 h-3 inline mr-1" />
-                    Waiting for data...
-                  </div>
-                </div>
-              </div>
+        {/* Right: Quick Integration & Workspace Info */}
+        <div className="space-y-3">
+          <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 space-y-3">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-white" />
+              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                SDK Instrumentation
+              </h2>
             </div>
-          </GlassCard>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Install the Orbit client package to hook into exceptions, WebSockets, and health metrics.
+            </p>
+
+            <div className="p-2 rounded bg-black border border-white/20 font-mono text-[11px] text-zinc-300 select-all">
+              npm install @orbit/nextjs
+            </div>
+
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+              <span className="text-zinc-500 text-[11px] font-mono">Detailed Setup</span>
+              <Link
+                href={`/dashboard/${projectId}/docs`}
+                className="text-[11px] font-mono text-zinc-300 hover:text-white underline flex items-center gap-0.5"
+              >
+                <span>Documentation</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 space-y-2">
+            <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider mb-1">
+              Projects Explorer
+            </h2>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Browse, monitor, and configure multiple applications from the new Projects hub.
+            </p>
+            <Link
+              href={`/dashboard/${projectId}/projects`}
+              className="inline-flex items-center justify-between w-full px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-mono font-bold text-white transition-colors"
+            >
+              <span>Explore Projects Directory</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

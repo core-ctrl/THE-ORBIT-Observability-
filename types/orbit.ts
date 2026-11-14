@@ -139,17 +139,46 @@ export interface Organization {
   created_at: string;
 }
 
+export interface ProjectMilestone {
+  id: string;
+  title: string;
+  status: "completed" | "in_progress" | "planned";
+  dueDate: string;
+  owner?: string;
+  progressPercent?: number;
+}
+
+export interface ProjectTech {
+  name: string;
+  role: string;
+  version?: string;
+  category: "frontend" | "backend" | "database" | "observability" | "infra";
+}
+
 export interface Project {
   id: string;
-  org_id: string;
+  org_id?: string;
+  orgId?: string;
   name: string;
   slug: string;
   platform: string;
-  dsn_key: string;
-  ingest_token: string;
-  timezone: string;
-  environment: string;
-  created_at: string;
+  dsn_key?: string;
+  dsnKey?: string;
+  ingest_token?: string;
+  ingestToken?: string;
+  timezone?: string;
+  environment?: string;
+  created_at?: string;
+  createdAt?: string;
+  description?: string;
+  status?: "active" | "healthy" | "degraded" | "staging" | "archived";
+  progress?: number;
+  category?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  objectives?: string[];
+  milestones?: ProjectMilestone[];
+  techStack?: ProjectTech[];
 }
 
 export interface Issue {
@@ -344,6 +373,7 @@ export interface UserProfile {
   avatar_url: string | null;
   plan: string;
   created_at: string;
+  role?: string;
 }
 
 export interface PublicStatusData {

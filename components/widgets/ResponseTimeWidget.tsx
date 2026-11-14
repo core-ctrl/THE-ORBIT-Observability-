@@ -14,7 +14,7 @@ export function ResponseTimeWidget({ onRemove }: { onRemove?: () => void }): JSX
     <WidgetFrame title="Response Times" onRemove={onRemove}>
       {data.length ? (
         <div className="h-full min-h-40">
-          <AreaChart data={data} unit=" ms" color="#4cc9f0" />
+          <AreaChart data={data} unit=" ms" />
         </div>
       ) : (
         <EmptyState title="No latency samples yet" description="Waiting for data..." />

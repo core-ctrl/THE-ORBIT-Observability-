@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, LogOut } from "lucide-react";
+import { OrbitLogo } from "@/components/ui/orbit-logo";
 import { clearToken } from "@/lib/api";
 
 const settingsSections = [
@@ -45,15 +46,16 @@ export function SettingsSidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-[var(--glass-border)] flex flex-col z-50 bg-bg-primary">
+    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-white/10 flex flex-col z-50 bg-black text-white">
       {/* Header / Back Button */}
-      <div className="flex items-center h-14 px-4 border-b border-[var(--glass-border)]">
+      <div className="flex items-center justify-between h-14 px-3.5 border-b border-white/10">
+        <OrbitLogo href="/dashboard" size="sm" />
         <Link 
           href="/dashboard"
-          className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors w-full"
+          className="flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
         >
-          <ChevronLeft className="w-4 h-4" />
-          Settings
+          <ChevronLeft className="w-3.5 h-3.5" />
+          <span>Exit</span>
         </Link>
       </div>
 
@@ -61,7 +63,7 @@ export function SettingsSidebar() {
       <div className="flex-1 overflow-y-auto scrollbar py-4 px-3 flex flex-col gap-6">
         {settingsSections.map((section) => (
           <div key={section.label}>
-            <div className="px-3 mb-2 text-[13px] font-bold text-[var(--text-primary)] flex items-center justify-between">
+            <div className="px-3 mb-2 text-[12px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
               {section.label}
             </div>
             <div className="flex flex-col gap-0.5">
@@ -74,8 +76,8 @@ export function SettingsSidebar() {
                     href={item.href}
                     className={`px-3 py-1.5 text-[13px] rounded-md transition-colors ${
                       isActive 
-                        ? "bg-[var(--accent)] text-white font-medium shadow-glow" 
-                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg-hover)]"
+                        ? "bg-white text-black font-semibold shadow-sm" 
+                        : "text-zinc-400 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {item.name}
@@ -88,10 +90,10 @@ export function SettingsSidebar() {
       </div>
 
       {/* Bottom Section */}
-      <div className="p-3 border-t border-[var(--glass-border)]">
+      <div className="p-3 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 text-[13px] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:bg-danger/10 rounded-md transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 text-[13px] text-zinc-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Sign Out

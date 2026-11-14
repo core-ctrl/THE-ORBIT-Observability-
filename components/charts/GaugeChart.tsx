@@ -1,10 +1,11 @@
 "use client";
 
+import { memo } from "react";
 import { RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
 
-export function GaugeChart({
+export const GaugeChart = memo(function GaugeChart({
   value,
-  color = "#44d7b6"
+  color = "#ffffff"
 }: {
   value: number;
   color?: string;
@@ -23,13 +24,13 @@ export function GaugeChart({
           endAngle={-20}
           data={[{ value: normalized, fill: color }]}
         >
-          <RadialBar dataKey="value" background={{ fill: "#1d2b42" }} cornerRadius={8} />
+          <RadialBar dataKey="value" background={{ fill: "rgba(255, 255, 255, 0.08)" }} cornerRadius={8} />
         </RadialBarChart>
       </ResponsiveContainer>
-      <div className="absolute inset-x-0 bottom-5 text-center">
-        <span className="text-3xl font-semibold">{normalized.toFixed(1)}</span>
-        <span className="text-sm text-muted">%</span>
+      <div className="absolute inset-x-0 bottom-5 text-center font-mono">
+        <span className="text-3xl font-bold text-white">{normalized.toFixed(1)}</span>
+        <span className="text-sm text-zinc-500">%</span>
       </div>
     </div>
   );
-}
+});

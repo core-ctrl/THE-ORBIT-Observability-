@@ -31,7 +31,8 @@ export default function OnboardingPage(): JSX.Element {
         platform,
       });
 
-      setDsn(`https://ingest.orbit.dev/api/ingest/${projData.dsn_key}`);
+      const key = projData.dsn_key || projData.dsnKey || "";
+      setDsn(`https://ingest.orbit.dev/api/ingest/${key}`);
       setStep(3);
     } catch (err) {
       console.error("Onboarding error:", err);

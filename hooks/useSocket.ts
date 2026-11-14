@@ -1,104 +1,161 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { getToken } from "@/lib/api";
-import { connectSocket } from "@/lib/socket";
+import { useEffect } from "react";
+import { api, getToken } from "@/lib/api";
 import { useOrbitStore } from "@/store/orbitStore";
-import type {
-  AlertItem,
-  ContainerUpdate,
-  EndpointMetric,
-  LogEntry,
-  SslCertificate,
-  SystemMetric,
-  DatabaseHealth,
-} from "@/types/orbit";
 
-// Singleton — connection persists across page navigations
-let socketRef: ReturnType<typeof connectSocket> | null = null;
-let isConnecting = false;
+function getWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
+  if (typeof window !== "undefined") {
+    const loc = window.location;
+    const host = loc.hostname || "localhost";
+    return `ws://${host}:8000/ws/telemetry`;
+  }
+  return "ws://localhost:8000/ws/telemetry";
+}
+
+let wsRef: WebSocket | null = null;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function useSocket(): void {
-  const setConnected = useOrbitStore((s) => s.setConnected);
-  const setSystem = useOrbitStore((s) => s.setSystem);
-  const setDocker = useOrbitStore((s) => s.setDocker);
-  const setEndpoints = useOrbitStore((s) => s.setEndpoints);
-  const setDatabases = useOrbitStore((s) => s.setDatabases);
-  const setSsl = useOrbitStore((s) => s.setSsl);
-  const setAlerts = useOrbitStore((s) => s.setAlerts);
-  const pushAlert = useOrbitStore((s) => s.pushAlert);
-  const pushLog = useOrbitStore((s) => s.pushLog);
-
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
-    // If already connected, skip
-    if (socketRef?.connected || isConnecting) return;
+    let unmounted = false;
+    let isPolling = true;
 
-    isConnecting = true;
-    const socket = connectSocket();
-    socketRef = socket;
-
-    socket.on("connect", () => {
-      setConnected(true);
-      isConnecting = false;
-      console.log("[Orbit] Socket connected:", socket.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      setConnected(false);
-      console.log("[Orbit] Socket disconnected:", reason);
-    });
-
-    socket.on("connect_error", (err) => {
-      setConnected(false);
-      isConnecting = false;
-      if (err.message === "websocket error") {
-        console.warn("[Orbit] WebSocket unavailable, falling back to HTTP polling.");
-      } else {
-        console.error("[Orbit] Socket error:", err.message);
+    // Resilient fallback HTTP polling: only polls if WebSocket is NOT connected
+    const pollBackend = async () => {
+      if (!isPolling || unmounted) return;
+      
+      // If WebSocket is active and streaming, skip redundant HTTP requests
+      if (wsRef && wsRef.readyState === WebSocket.OPEN) {
+        return;
       }
-    });
 
-    // Real-time data events
-    socket.on("system:update", (metric: SystemMetric) => setSystem(metric));
+      try {
+        const [sysRes, epsRes, dbsRes, dockerRes, contRes, sslRes] = await Promise.allSettled([
+          api.system(),
+          api.endpoints(),
+          api.databases(),
+          api.dockerStatus(),
+          api.containers(),
+          api.ssl(),
+        ]);
 
-    socket.on("containers:update", (update: ContainerUpdate) =>
-      setDocker(update.status, update.containers)
-    );
+        let hasData = false;
 
-    socket.on("endpoints:update", (metrics: EndpointMetric[]) =>
-      setEndpoints(metrics)
-    );
+        if (sysRes.status === "fulfilled" && sysRes.value) {
+          useOrbitStore.getState().setSystem(sysRes.value);
+          hasData = true;
+        }
 
-    socket.on("databases:update", (dbs: DatabaseHealth[]) =>
-      setDatabases(dbs)
-    );
+        if (epsRes.status === "fulfilled" && Array.isArray(epsRes.value)) {
+          useOrbitStore.getState().setEndpoints(epsRes.value);
+          hasData = true;
+        }
 
-    socket.on("ssl:update", (certs: SslCertificate[]) => setSsl(certs));
+        if (dbsRes.status === "fulfilled" && Array.isArray(dbsRes.value)) {
+          useOrbitStore.getState().setDatabases(dbsRes.value);
+          hasData = true;
+        }
 
-    socket.on("alerts:snapshot", (items: AlertItem[]) => setAlerts(items));
+        if (dockerRes.status === "fulfilled" && dockerRes.value) {
+          const conts = contRes.status === "fulfilled" && Array.isArray(contRes.value) ? contRes.value : [];
+          useOrbitStore.getState().setDocker(dockerRes.value, conts);
+          hasData = true;
+        }
 
-    socket.on("alert:new", (alert: AlertItem) => {
-      pushAlert(alert);
-      // Browser notification if permitted
-      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-        new Notification(`Orbit Alert: ${alert.title}`, {
-          body: alert.message,
-          icon: "/favicon.ico",
-        });
+        if (sslRes.status === "fulfilled" && Array.isArray(sslRes.value)) {
+          useOrbitStore.getState().setSsl(sslRes.value);
+          hasData = true;
+        }
+
+        if (hasData) {
+          useOrbitStore.getState().setConnected(true);
+        }
+      } catch (err) {
+        if (!wsRef || wsRef.readyState !== WebSocket.OPEN) {
+          useOrbitStore.getState().setConnected(false);
+        }
       }
-    });
+    };
 
-    socket.on("container:event", (event: { name: string; action: string }) => {
-      const log: LogEntry = {
-        timestamp: new Date().toISOString(),
-        source: event.name,
-        message: `Container event: ${event.action}`,
-      };
-      pushLog(log);
-    });
+    // Immediate initial sync to populate widgets on first load
+    pollBackend();
 
-    // Note: We do NOT return a cleanup that disconnects — singleton stays alive
-  }, [pushAlert, pushLog, setAlerts, setConnected, setDatabases, setDocker, setEndpoints, setSsl, setSystem]);
+    // Fallback polling runs every 5 seconds, but skips when WebSocket is streaming
+    const pollInterval = setInterval(pollBackend, 5000);
+
+    // Native RFC 6455 WebSocket connection matching telemetry stream
+    function connectWs() {
+      if (unmounted) return;
+      if (wsRef && (wsRef.readyState === WebSocket.OPEN || wsRef.readyState === WebSocket.CONNECTING)) {
+        return;
+      }
+
+      try {
+        const wsUrl = getWsUrl();
+        const ws = new WebSocket(wsUrl);
+        wsRef = ws;
+
+        ws.onopen = () => {
+          console.log("[Orbit] Native Telemetry WebSocket connected & active");
+          useOrbitStore.getState().setConnected(true);
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            const { event: evt, data } = payload;
+            if (evt === "session:ready") {
+              useOrbitStore.getState().setConnected(true);
+            } else if (evt === "system:update" && data) {
+              useOrbitStore.getState().setSystem(data);
+              useOrbitStore.getState().setConnected(true);
+            } else if (evt === "containers:update" && data) {
+              useOrbitStore.getState().setDocker(data.status, data.containers);
+            } else if (evt === "databases:update" && data) {
+              useOrbitStore.getState().setDatabases(data);
+            } else if (evt === "endpoints:update" && data) {
+              useOrbitStore.getState().setEndpoints(data);
+            } else if (evt === "ssl:update" && data) {
+              useOrbitStore.getState().setSsl(data);
+            } else if (evt === "alert:new" && data) {
+              useOrbitStore.getState().pushAlert(data);
+            }
+          } catch (e) {
+            console.error("[Orbit] Error parsing WS message:", e);
+          }
+        };
+
+        ws.onerror = () => {
+          // Fallback HTTP polling automatically continues
+        };
+
+        ws.onclose = () => {
+          wsRef = null;
+          if (!unmounted) {
+            reconnectTimer = setTimeout(connectWs, 3000);
+          }
+        };
+      } catch {
+        wsRef = null;
+        if (!unmounted) {
+          reconnectTimer = setTimeout(connectWs, 3000);
+        }
+      }
+    }
+
+    connectWs();
+
+    return () => {
+      unmounted = true;
+      isPolling = false;
+      clearInterval(pollInterval);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (wsRef) {
+        wsRef.close();
+        wsRef = null;
+      }
+    };
+  }, []);
 }

@@ -16,7 +16,7 @@ export function DiskWidget({ onRemove }: { onRemove?: () => void }): JSX.Element
             <span className="text-xs text-muted">{formatBytes(system.disk_used)} used</span>
           </div>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-line">
-            <div className="h-full rounded-full bg-amber" style={{ width: `${system.disk_percent}%` }} />
+            <div className="h-full rounded-full bg-white" style={{ width: `${system.disk_percent}%` }} />
           </div>
           <p className="mt-3 text-xs text-muted">{formatBytes(system.disk_total)} capacity</p>
         </div>

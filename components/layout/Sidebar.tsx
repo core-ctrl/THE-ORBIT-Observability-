@@ -6,18 +6,27 @@ import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, AlertCircle, Activity, Clock, Server, Container,
   Database, FileText, Bell, Settings, BookOpen, ChevronDown,
-  Flame, GitCommit, BarChart3, LogOut, Palette
+  Flame, GitCommit, BarChart3, LogOut, Palette, FolderKanban, Boxes, Code2, ShieldCheck
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { OrbitLogo } from "@/components/ui/orbit-logo";
+import { useOrbitStore } from "@/store/orbitStore";
 import { api, clearToken } from "@/lib/api";
 import type { Project } from "@/types/orbit";
 
 const navSections = [
   {
+    label: "Workspace",
+    items: [
+      { name: "Projects", href: "/projects", icon: FolderKanban },
+      { name: "Overview", href: "", icon: LayoutDashboard },
+      { name: "Cloud IDE", href: "/ide", icon: Code2 },
+    ],
+  },
+  {
     label: "Monitor",
     items: [
-      { name: "Overview", href: "", icon: LayoutDashboard },
       { name: "Issues", href: "/issues", icon: AlertCircle },
       { name: "Incidents", href: "/incidents", icon: Flame },
       { name: "Performance", href: "/performance", icon: Activity },
@@ -56,6 +65,9 @@ export function Sidebar() {
   const [unresolvedCount, setUnresolvedCount] = useState<number | null>(null);
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+
+  const guardianSidebarOpen = useOrbitStore((s) => s.guardianSidebarOpen);
+  const toggleGuardianSidebar = useOrbitStore((s) => s.toggleGuardianSidebar);
 
   const fetchUnresolvedCount = useCallback(async () => {
     try {
@@ -112,50 +124,71 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-[var(--glass-border)] flex flex-col z-50"
-      style={{ background: 'var(--gradient-sidebar)', backdropFilter: 'blur(20px)' }}
+    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-[var(--glass-border)] flex flex-col z-50 transition-colors duration-300"
+      style={{ background: 'var(--sidebar-bg)', backdropFilter: 'blur(20px)' }}
     >
-      {/* Logo / Project Switcher */}
-      <div className="relative flex items-center h-14 px-4 border-b border-[var(--glass-border)] justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
-            style={{ background: 'var(--gradient-accent)' }}
-          >
-            {projectName[0]?.toUpperCase() || "O"}
-          </div>
-          <span className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[110px]">
-            {projectName}
-          </span>
+      {/* Brand & Workspace Switcher Header */}
+      <div className="relative border-b border-[var(--glass-border)] p-3">
+        {/* Brand identity */}
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <OrbitLogo href={projectId ? `/dashboard/${projectId}` : "/dashboard"} badge="PLATFORM" />
         </div>
 
-        {projectsList.length > 1 && (
-          <div className="relative">
-            <button
-              onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-              className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-md hover:bg-[var(--glass-bg-hover)] transition-colors"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            {showProjectDropdown && (
-              <div className="absolute right-0 mt-2 w-48 glass-card-elevated py-1 z-50 animate-scale-in">
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--glass-border)] mb-1">
-                  Switch Project
-                </div>
-                {projectsList.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => switchProject(p.id)}
-                    className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-[var(--glass-bg-hover)] truncate ${
-                      p.id === projectId
-                        ? "text-[var(--accent)] font-semibold"
-                        : "text-[var(--text-primary)]"
-                    }`}
-                  >
-                    {p.name}
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* Project Switcher Pill */}
+        <button
+          onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+          className="w-full flex items-center justify-between p-2 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-hover)] border border-[var(--glass-border)] transition-all group text-left cursor-pointer shadow-sm"
+          title="Switch Active Project"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0 shadow-sm transition-transform group-hover:scale-105">
+              <Boxes className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-white truncate transition-colors">
+                {projectName}
+              </span>
+              <span className="text-[10px] text-zinc-400 flex items-center gap-1.5 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shrink-0" />
+                production
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0 ${showProjectDropdown ? 'rotate-180' : ''}`} />
+        </button>
+
+        {showProjectDropdown && (
+          <div className="absolute left-3 right-3 top-[92px] glass-card-elevated py-1.5 z-50 animate-scale-in shadow-2xl rounded-xl border border-[var(--glass-border-hover)] bg-[var(--bg-card)]">
+            <div className="px-3 py-1 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--glass-border)] mb-1 flex items-center justify-between">
+              <span>Switch Workspace</span>
+              <span className="text-[9px] font-mono">{projectsList.length} active</span>
+            </div>
+            <div className="max-h-48 overflow-y-auto scrollbar">
+              {projectsList.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => switchProject(p.id)}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-white/5 flex items-center justify-between truncate ${
+                    p.id === projectId
+                      ? "text-white font-semibold bg-white/10 border-l-2 border-white"
+                      : "text-zinc-300 hover:text-white"
+                  }`}
+                >
+                  <span className="truncate">{p.name}</span>
+                  {p.id === projectId && (
+                    <span className="text-[10px] text-white font-bold">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-white/10 mt-1 pt-1 px-2">
+              <Link
+                href="/dashboard/projects"
+                className="w-full text-left px-2 py-1 text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 font-medium transition-colors"
+              >
+                + View all projects
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -184,17 +217,19 @@ export function Sidebar() {
                     href={fullHref}
                     className={`sidebar-link ${isActive ? "active" : ""}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <item.icon className="w-4 h-4" />
-                      {item.name}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <item.icon className="w-3.5 h-3.5 shrink-0 stroke-[1.5]" />
+                      <span className="truncate">{item.name}</span>
                     </div>
                     {hasBadge && (
-                      <Badge
-                        variant="danger"
-                        className="text-[10px] px-1.5 py-0 h-4 min-w-4 flex items-center justify-center font-semibold"
-                      >
+                      <span className="text-[10px] px-1.5 py-0 h-4 min-w-4 rounded-full flex items-center justify-center font-mono font-bold bg-white text-black">
                         {unresolvedCount}
-                      </Badge>
+                      </span>
+                    )}
+                    {item.name === "Cloud IDE" && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white text-black font-mono font-bold uppercase tracking-wider">
+                        SLM
+                      </span>
                     )}
                   </Link>
                 );
@@ -206,31 +241,48 @@ export function Sidebar() {
 
       {/* Bottom Section */}
       <div className="p-2 border-t border-[var(--glass-border)] flex flex-col gap-0.5">
+        <button
+          type="button"
+          onClick={toggleGuardianSidebar}
+          className={`sidebar-link w-full text-left cursor-pointer transition ${
+            guardianSidebarOpen ? "active" : ""
+          }`}
+          title="Talk with Orbit Guardian AI Sentinel (Ctrl+Shift+G)"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0 stroke-[1.5] text-white" />
+            <span className="truncate text-zinc-300 group-hover:text-white">Guardian AI</span>
+          </div>
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/20 font-mono font-bold uppercase tracking-wider">
+            CHAT
+          </span>
+        </button>
+
         <Link
           href={`${baseUrl}/appearance`}
           className={`sidebar-link ${pathname?.includes("/appearance") ? "active" : ""}`}
         >
-          <div className="flex items-center gap-3">
-            <Palette className="w-4 h-4" />
-            Appearance
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Palette className="w-3.5 h-3.5 shrink-0 stroke-[1.5]" />
+            <span className="truncate">Appearance</span>
           </div>
         </Link>
         <Link
           href="/settings"
           className={`sidebar-link ${pathname?.includes("/settings") ? "active" : ""}`}
         >
-          <div className="flex items-center gap-3">
-            <Settings className="w-4 h-4" />
-            Settings
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Settings className="w-3.5 h-3.5 shrink-0 stroke-[1.5]" />
+            <span className="truncate">Settings</span>
           </div>
         </Link>
         <Link
           href={`${baseUrl}/docs`}
           className="sidebar-link"
         >
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-4 h-4" />
-            Docs
+          <div className="flex items-center gap-2.5 min-w-0">
+            <BookOpen className="w-3.5 h-3.5 shrink-0 stroke-[1.5]" />
+            <span className="truncate">Docs</span>
           </div>
         </Link>
 
@@ -242,9 +294,7 @@ export function Sidebar() {
           </div>
 
           <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--glass-bg-hover)] transition-colors group">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
-              style={{ background: 'var(--gradient-accent)' }}
-            >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-bold bg-white text-black shrink-0">
               {userName[0]?.toUpperCase() || "U"}
             </div>
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">

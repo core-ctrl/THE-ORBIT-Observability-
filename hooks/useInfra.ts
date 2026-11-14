@@ -8,10 +8,12 @@ import { useOrbitStore } from "@/store/orbitStore";
 
 export function useInfra() {
   const setSystem = useOrbitStore((state) => state.setSystem);
+  const connected = useOrbitStore((state) => state.connected);
   const query = useQuery({
     queryKey: ["system"],
     queryFn: api.system,
-    refetchInterval: 10000
+    refetchInterval: connected ? false : 10000,
+    staleTime: 5000
   });
   useEffect(() => {
     if (query.data) setSystem(query.data);

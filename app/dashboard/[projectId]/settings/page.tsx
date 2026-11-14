@@ -389,7 +389,7 @@ export default function SettingsPage({ params }: { params: Promise<{ projectId: 
                   <div className="text-sm text-text-secondary">{userEmail || "user@example.com"}</div>
                 </div>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">Owner</Badge>
+              <span className="bg-white text-black font-semibold text-xs px-2.5 py-0.5 rounded font-mono">Owner</span>
             </div>
           </div>
         </div>
@@ -568,10 +568,10 @@ export default function SettingsPage({ params }: { params: Promise<{ projectId: 
           </section>
 
           {newlyCreatedKey && (
-            <section className="bg-green-500/10 border border-green-500/20 rounded-xl p-5 space-y-2">
-              <span className="text-xs font-semibold text-green-400 flex items-center gap-1.5"><Check className="w-4 h-4" /> API Key Created Successfully!</span>
+            <section className="bg-black border border-white/20 rounded-xl p-5 space-y-2">
+              <span className="text-xs font-semibold text-white flex items-center gap-1.5"><Check className="w-4 h-4 text-white" /> API Key Generated</span>
               <p className="text-xs text-text-secondary">Copy this key now. It will not be shown again for security reasons:</p>
-              <div className="font-mono text-sm bg-black/60 border border-border p-3 rounded-lg text-text-primary break-all select-all">
+              <div className="font-mono text-sm bg-zinc-950 border border-border p-3 rounded-lg text-text-primary break-all select-all">
                 {newlyCreatedKey}
               </div>
             </section>

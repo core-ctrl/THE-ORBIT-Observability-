@@ -3,7 +3,7 @@
   <h1>Orbit Observability Platform</h1>
   
   <p>
-    <b>The next-generation, self-hosted observability and incident management platform.</b>
+    <b>The next-generation, cloud and hybrid observability and incident management platform.</b>
   </p>
   
   <p>
@@ -82,7 +82,7 @@ Orbit is composed of four core pillars working in unison.
 We welcome feedback, issue reports, and community interactions! Please adhere to our guidelines:
 
 1. **Security Disclosures:** If you discover a security vulnerability, please do not open a public issue. Email us privately first.
-2. **Acceptable Use:** The Orbit platform is intended to be self-hosted for authorized application monitoring. Do not use our SDKs for malicious tracking or unauthorized data harvesting.
+2. **Acceptable Use:** The Orbit platform is intended for authorized application monitoring and telemetry management. Do not use our SDKs for malicious tracking or unauthorized data harvesting.
 3. **Respectful Communication:** Please follow our Code of Conduct. We maintain a zero-tolerance policy for harassment or toxic behavior.
 
 ## 📄 License

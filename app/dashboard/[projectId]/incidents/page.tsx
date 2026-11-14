@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, use } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { Flame, Plus, ShieldAlert, CheckCircle, MessageSquare, User, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
 import { ListSkeleton } from "@/components/ui/loading-skeleton";
@@ -89,19 +88,23 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
     }
   };
 
-  const getSeverityColor = (sev: string) => {
+  const getSeverityBadge = (sev: string) => {
     switch (sev) {
-      case "critical": return "bg-red-500/20 text-red-400 border border-red-500/30";
-      case "major": return "bg-orange-500/20 text-orange-400 border border-orange-500/30";
-      default: return "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30";
+      case "critical":
+        return "bg-white text-black border-white font-semibold";
+      case "major":
+        return "bg-zinc-800 text-zinc-300 border-white/20 font-semibold";
+      default:
+        return "bg-zinc-900 text-zinc-400 border-white/10 font-semibold";
     }
   };
 
-  const getStatusColor = (stat: string) => {
+  const getStatusBadge = (stat: string) => {
     switch (stat) {
-      case "resolved": return "bg-green-500/20 text-green-400 border border-green-500/30";
-      case "monitoring": return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
-      default: return "bg-purple-500/20 text-purple-400 border border-purple-500/30";
+      case "resolved":
+        return "bg-white text-black border-white font-semibold";
+      default:
+        return "bg-zinc-900 text-zinc-300 border-white/15 font-semibold";
     }
   };
 
@@ -110,15 +113,27 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 text-white animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">Incident Management</h1>
-          <p className="text-text-secondary text-sm mt-1">Track active outages, root cause investigations, and real-time updates</p>
+          <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1">
+            Outage Timeline & Mitigation Tracking
+          </p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-black shadow-sm">
+                <Flame className="h-4 w-4" />
+              </span>
+              Incidents
+            </h1>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded border border-white/15 bg-white/5 text-zinc-300">
+              {incidents.length} INCIDENTS
+            </span>
+          </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-glow transition-all"
+          className="bg-white text-black hover:bg-zinc-200 px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition"
         >
           <Plus className="w-4 h-4" /> Trigger Incident
         </button>
@@ -127,30 +142,36 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Incident List */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden">
             {incidents.length === 0 ? (
               <EmptyState 
                 icon={CheckCircle}
                 title="All systems operational"
-                description="No active or resolved incidents reported. Enjoy the quiet!"
+                description="Zero active outages or degraded services reported across workspace clusters."
               />
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-white/5">
                 {incidents.map((inc) => (
                   <button
                     key={inc.id}
                     onClick={() => fetchIncidentDetails(inc.id)}
-                    className={`w-full text-left p-5 flex items-start gap-4 hover:bg-hover transition-colors ${selectedIncident?.id === inc.id ? "bg-hover/50" : ""}`}
+                    className={`w-full text-left p-5 flex items-start gap-4 hover:bg-white/[0.02] transition ${
+                      selectedIncident?.id === inc.id ? "bg-white/[0.04]" : ""
+                    }`}
                   >
-                    <Flame className={`w-5 h-5 shrink-0 mt-0.5 ${inc.status === "resolved" ? "text-text-muted" : "text-danger"}`} />
+                    <Flame className={`w-5 h-5 shrink-0 mt-0.5 ${inc.status === "resolved" ? "text-zinc-600" : "text-white"}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-medium text-text-primary truncate">{inc.title}</span>
-                        <Badge className={getSeverityColor(inc.severity)}>{inc.severity}</Badge>
-                        <Badge className={getStatusColor(inc.status)}>{inc.status}</Badge>
+                        <span className="font-semibold text-white truncate text-sm">{inc.title}</span>
+                        <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${getSeverityBadge(inc.severity)}`}>
+                          {inc.severity}
+                        </span>
+                        <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${getStatusBadge(inc.status)}`}>
+                          {inc.status}
+                        </span>
                       </div>
-                      <div className="text-xs text-text-secondary">
-                        Created {formatDistanceToNow(new Date(inc.created_at), { addSuffix: true })}
+                      <div className="text-xs font-mono text-zinc-500">
+                        Triggered {formatDistanceToNow(new Date(inc.created_at), { addSuffix: true })}
                       </div>
                     </div>
                   </button>
@@ -163,14 +184,14 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
         {/* Selected Incident Details */}
         <div className="space-y-4">
           {selectedIncident ? (
-            <div className="bg-card border border-border rounded-xl p-5 space-y-5">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-base font-semibold text-text-primary mb-2">{selectedIncident.title}</h2>
+            <div className="bg-zinc-950 border border-white/10 rounded-2xl p-5 space-y-5">
+              <div className="border-b border-white/10 pb-4">
+                <h2 className="text-base font-semibold text-white mb-2">{selectedIncident.title}</h2>
                 <div className="flex gap-2 flex-wrap mb-4">
-                  <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${getSeverityColor(selectedIncident.severity)}`}>
+                  <span className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded border ${getSeverityBadge(selectedIncident.severity)}`}>
                     {selectedIncident.severity}
                   </span>
-                  <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${getStatusColor(selectedIncident.status)}`}>
+                  <span className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded border ${getStatusBadge(selectedIncident.status)}`}>
                     {selectedIncident.status}
                   </span>
                 </div>
@@ -180,71 +201,73 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
                   <select
                     value={selectedIncident.status}
                     onChange={(e) => updateIncidentState({ status: e.target.value as Incident['status'] })}
-                    className="bg-secondary border border-border rounded-lg px-2 py-1 text-xs outline-none text-text-primary"
+                    className="bg-black border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-mono outline-none text-white focus:border-white cursor-pointer"
                   >
-                    <option value="open">Open</option>
-                    <option value="investigating">Investigating</option>
-                    <option value="identified">Identified</option>
-                    <option value="monitoring">Monitoring</option>
-                    <option value="resolved">Resolved</option>
+                    <option value="open" className="bg-black text-white">Open</option>
+                    <option value="investigating" className="bg-black text-white">Investigating</option>
+                    <option value="identified" className="bg-black text-white">Identified</option>
+                    <option value="monitoring" className="bg-black text-white">Monitoring</option>
+                    <option value="resolved" className="bg-black text-white">Resolved</option>
                   </select>
                   
                   <select
                     value={selectedIncident.severity}
                     onChange={(e) => updateIncidentState({ severity: e.target.value as Incident['severity'] })}
-                    className="bg-secondary border border-border rounded-lg px-2 py-1 text-xs outline-none text-text-primary"
+                    className="bg-black border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-mono outline-none text-white focus:border-white cursor-pointer"
                   >
-                    <option value="minor">Minor</option>
-                    <option value="major">Major</option>
-                    <option value="critical">Critical</option>
+                    <option value="minor" className="bg-black text-white">Minor</option>
+                    <option value="major" className="bg-black text-white">Major</option>
+                    <option value="critical" className="bg-black text-white">Critical</option>
                   </select>
                 </div>
               </div>
 
               {/* Updates log */}
               <div className="space-y-4">
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                  <MessageSquare className="w-3.5 h-3.5" /> Timeline Updates
+                <h3 className="text-xs font-mono font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-white" /> Timeline Updates
                 </h3>
                 
-                <div className="space-y-3 max-h-60 overflow-y-auto scrollbar pr-1">
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                   {updates.length === 0 ? (
-                    <p className="text-xs text-text-muted">No updates posted yet.</p>
+                    <p className="text-xs font-mono text-zinc-500">No updates logged yet.</p>
                   ) : (
                     updates.map((up) => (
-                      <div key={up.id} className="text-xs border border-border bg-secondary/30 rounded-lg p-3">
-                        <div className="flex items-center justify-between text-text-muted mb-1 font-medium">
-                          <span className="flex items-center gap-1"><User className="w-3 h-3" /> Staff Update</span>
+                      <div key={up.id} className="text-xs border border-white/10 bg-black rounded-xl p-3 space-y-1">
+                        <div className="flex items-center justify-between text-zinc-500 font-mono text-[11px]">
+                          <span className="flex items-center gap-1.5 text-zinc-300 font-medium">
+                            <User className="w-3 h-3 text-white" /> Operator Update
+                          </span>
                           <span>{formatDistanceToNow(new Date(up.created_at), { addSuffix: true })}</span>
                         </div>
-                        <p className="text-text-primary leading-relaxed">{up.message}</p>
+                        <p className="text-white leading-relaxed font-sans">{up.message}</p>
                       </div>
                     ))
                   )}
                 </div>
 
-                <form onSubmit={handleAddUpdate} className="pt-2 border-t border-border space-y-2">
+                <form onSubmit={handleAddUpdate} className="pt-2 border-t border-white/10 space-y-2">
                   <textarea
                     placeholder="Write a timeline update..."
                     value={updateMessage}
                     onChange={(e) => setUpdateMessage(e.target.value)}
                     rows={2}
-                    className="w-full bg-secondary border border-border rounded-lg p-2 text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full bg-black border border-white/15 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-white font-mono"
                     required
                   />
                   <button
                     type="submit"
-                    className="w-full bg-text-primary text-primary hover:bg-white text-xs font-semibold py-2 rounded-lg transition-transform active:scale-[0.98]"
+                    className="w-full bg-white text-black hover:bg-zinc-200 text-xs font-semibold py-2 rounded-xl transition"
                   >
-                    Post Update
+                    Post Incident Update
                   </button>
                 </form>
               </div>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-xl p-5 text-center text-text-secondary flex flex-col items-center py-10">
-              <ShieldAlert className="w-6 h-6 text-text-muted mb-2 animate-bounce" />
-              <p className="text-xs font-medium">Select an incident to view its detailed timeline, update severity/status, or add updates.</p>
+            <div className="bg-zinc-950 border border-white/10 rounded-2xl p-6 text-center text-zinc-400 flex flex-col items-center py-12">
+              <ShieldAlert className="w-6 h-6 text-zinc-500 mb-2" />
+              <p className="text-xs font-mono">Select an incident to view root-cause investigations, status changes, and public timeline logs.</p>
             </div>
           )}
         </div>
@@ -252,43 +275,45 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
 
       {/* Trigger Incident Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-md rounded-xl p-6 shadow-2xl relative">
-            <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2"><AlertTriangle className="text-danger w-5 h-5" /> Trigger New Incident</h2>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-white/20 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
+              <AlertTriangle className="text-white w-4 h-4" /> Trigger New Incident
+            </h2>
             <form onSubmit={handleCreateIncident} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Title</label>
+                <label className="block text-xs font-mono text-zinc-400 mb-1">Incident Title</label>
                 <input
                   type="text"
-                  placeholder="e.g. Major checkout failure"
+                  placeholder="e.g. Major checkout queue failure"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full bg-black border border-white/15 rounded-lg p-2.5 text-xs font-mono text-white focus:outline-none focus:border-white"
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Severity</label>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">Severity</label>
                   <select
                     value={severity}
                     onChange={(e) => setSeverity(e.target.value)}
-                    className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary outline-none"
+                    className="w-full bg-black border border-white/15 rounded-lg p-2.5 text-xs font-mono text-white outline-none focus:border-white cursor-pointer"
                   >
-                    <option value="minor">Minor</option>
-                    <option value="major">Major</option>
-                    <option value="critical">Critical</option>
+                    <option value="minor" className="bg-black text-white">Minor</option>
+                    <option value="major" className="bg-black text-white">Major</option>
+                    <option value="critical" className="bg-black text-white">Critical</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Initial Status</label>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">Initial Status</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-secondary border border-border rounded-lg p-2 text-sm text-text-primary outline-none"
+                    className="w-full bg-black border border-white/15 rounded-lg p-2.5 text-xs font-mono text-white outline-none focus:border-white cursor-pointer"
                   >
-                    <option value="open">Open</option>
-                    <option value="investigating">Investigating</option>
+                    <option value="open" className="bg-black text-white">Open</option>
+                    <option value="investigating" className="bg-black text-white">Investigating</option>
                   </select>
                 </div>
               </div>
@@ -296,15 +321,15 @@ export default function IncidentsPage({ params }: { params: Promise<{ projectId:
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-hover border border-border text-text-primary hover:bg-hover/80 px-4 py-2 rounded-lg text-sm font-semibold"
+                  className="bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white px-4 py-2 rounded-xl text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-semibold"
+                  className="bg-white text-black hover:bg-zinc-200 px-5 py-2 rounded-xl text-xs font-semibold"
                 >
-                  Trigger
+                  Trigger Incident
                 </button>
               </div>
             </form>

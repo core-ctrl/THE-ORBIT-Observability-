@@ -12,7 +12,7 @@ export function RamWidget({ onRemove }: { onRemove?: () => void }): JSX.Element 
     <WidgetFrame title="Memory Usage" onRemove={onRemove}>
       {system ? (
         <>
-          <GaugeChart value={system.memory_percent} color="#4cc9f0" />
+          <GaugeChart value={system.memory_percent} />
           <p className="-mt-3 text-center text-xs text-muted">
             {formatBytes(system.memory_used)} / {formatBytes(system.memory_total)}
           </p>

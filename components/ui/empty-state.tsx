@@ -28,16 +28,19 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-20 px-4', className)}>
-      {/* Icon container with glass effect */}
-      <div className="w-16 h-16 rounded-2xl glass-card-elevated flex items-center justify-center mb-6 animate-scale-in">
-        <Icon className="w-7 h-7 text-[var(--text-muted)]" strokeWidth={1.5} />
+      {/* Icon container with radar halo */}
+      <div className="relative mb-5 flex items-center justify-center animate-scale-in">
+        <div className="absolute w-20 h-20 rounded-full bg-accent/10 dark:bg-accent/15 blur-sm" />
+        <div className="w-14 h-14 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-hover)] shadow-md flex items-center justify-center text-accent relative z-10">
+          <Icon className="w-6 h-6" strokeWidth={1.75} />
+        </div>
       </div>
 
       {/* Text */}
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 animate-fade-in">
+      <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1.5 animate-fade-in tracking-tight">
         {title}
       </h3>
-      <p className="text-sm text-[var(--text-secondary)] text-center max-w-sm mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <p className="text-xs text-[var(--text-secondary)] text-center max-w-md mb-6 animate-fade-in leading-relaxed" style={{ animationDelay: '100ms' }}>
         {description}
       </p>
 

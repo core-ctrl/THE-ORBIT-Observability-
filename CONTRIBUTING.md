@@ -1,6 +1,6 @@
 # Contributing to Orbit
 
-Thanks for helping make self-hosted monitoring more approachable.
+Thanks for helping build the future of modern cloud and hybrid observability.
 
 ## Development
 
