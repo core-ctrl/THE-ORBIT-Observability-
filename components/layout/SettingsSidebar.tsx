@@ -46,7 +46,7 @@ export function SettingsSidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-white/10 flex flex-col z-50 bg-black text-white">
+    <aside className="hidden md:flex fixed inset-y-0 left-0 w-[240px] border-r border-white/10 flex-col z-50 bg-black text-white">
       {/* Header / Back Button */}
       <div className="flex items-center justify-between h-14 px-3.5 border-b border-white/10">
         <OrbitLogo href="/dashboard" size="sm" />

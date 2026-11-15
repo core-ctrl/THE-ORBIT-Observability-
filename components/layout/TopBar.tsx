@@ -6,7 +6,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   Bell, Activity, Server, Cpu, HardDrive, Check,
   User, Settings, Building2, Sliders, LogOut, ChevronDown,
-  Radar, ShieldCheck, Key, Code2
+  Radar, ShieldCheck, Key, Code2, Menu, X
 } from "lucide-react";
 import { useOrbitStore } from "@/store/orbitStore";
 import { formatDistanceToNow } from "date-fns";
@@ -32,6 +32,8 @@ export function TopBar() {
   const system = useOrbitStore((s) => s.system);
   const guardianSidebarOpen = useOrbitStore((s) => s.guardianSidebarOpen);
   const toggleGuardianSidebar = useOrbitStore((s) => s.toggleGuardianSidebar);
+  const sidebarOpen = useOrbitStore((s) => s.sidebarOpen);
+  const toggleSidebar = useOrbitStore((s) => s.toggleSidebar);
 
   const unread = alerts.slice(0, 5);
 
@@ -103,7 +105,17 @@ export function TopBar() {
       style={{ background: 'var(--header-bg)' }}
     >
       {/* Left: Professional Breadcrumbs & Telemetry Status */}
-      <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+      <div className="flex items-center gap-2.5 sm:gap-5 min-w-0">
+        {/* Mobile Sidebar Trigger */}
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+          className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
+        >
+          {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
+
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs min-w-0">
           <Link
             href="/dashboard/projects"

@@ -68,6 +68,13 @@ export function Sidebar() {
 
   const guardianSidebarOpen = useOrbitStore((s) => s.guardianSidebarOpen);
   const toggleGuardianSidebar = useOrbitStore((s) => s.toggleGuardianSidebar);
+  const sidebarOpen = useOrbitStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useOrbitStore((s) => s.setSidebarOpen);
+
+  useEffect(() => {
+    // Automatically close sidebar on mobile navigation
+    setSidebarOpen(false);
+  }, [pathname, setSidebarOpen]);
 
   const fetchUnresolvedCount = useCallback(async () => {
     try {
@@ -124,9 +131,22 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-[240px] border-r border-[var(--glass-border)] flex flex-col z-50 transition-colors duration-300"
-      style={{ background: 'var(--sidebar-bg)', backdropFilter: 'blur(20px)' }}
-    >
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 w-[240px] border-r border-[var(--glass-border)] flex flex-col z-50 transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+        style={{ background: 'var(--sidebar-bg)', backdropFilter: 'blur(20px)' }}
+      >
       {/* Brand & Workspace Switcher Header */}
       <div className="relative border-b border-[var(--glass-border)] p-3">
         {/* Brand identity */}
@@ -314,5 +334,6 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+  </>
   );
 }

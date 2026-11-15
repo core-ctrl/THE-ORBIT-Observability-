@@ -68,7 +68,7 @@ export default function OverviewPage({
       </div>
 
       {/* KPI Cards (4 items) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Events */}
         <div className="bg-zinc-950 border border-white/10 rounded-lg p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between text-zinc-400 text-[11px] mb-2 font-mono uppercase">

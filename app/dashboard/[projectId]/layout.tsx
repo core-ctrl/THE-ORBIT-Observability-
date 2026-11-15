@@ -32,9 +32,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       className="monochrome-shell flex min-h-screen text-[var(--text-primary)] relative selection:bg-white selection:text-black transition-colors duration-300 bg-black"
     >
       <Sidebar />
-      <div className="flex-1 ml-[240px] flex flex-col min-h-screen relative z-10 bg-black">
+      <div className="flex-1 ml-0 md:ml-[240px] flex flex-col min-h-screen relative z-10 bg-black transition-all duration-300 w-full min-w-0 overflow-x-hidden">
         <TopBar />
-        <main className="flex-1 p-4 sm:p-5 md:p-6 flex flex-col max-w-[1600px] w-full">
+        <main className="flex-1 p-3 sm:p-5 md:p-6 flex flex-col max-w-[1600px] w-full mx-auto min-w-0">
           {children}
         </main>
         <GlobalFooter />

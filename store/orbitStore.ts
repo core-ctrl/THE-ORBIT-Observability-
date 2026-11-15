@@ -23,6 +23,7 @@ interface OrbitState {
   alerts: AlertItem[];
   logs: LogEntry[];
   guardianSidebarOpen: boolean;
+  sidebarOpen: boolean;
   setConnected: (connected: boolean) => void;
   setSystem: (system: SystemMetric) => void;
   setDocker: (docker: DockerStatus, containers: ContainerMetric[]) => void;
@@ -34,11 +35,14 @@ interface OrbitState {
   pushLog: (log: LogEntry) => void;
   setGuardianSidebarOpen: (open: boolean) => void;
   toggleGuardianSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 export const useOrbitStore = create<OrbitState>((set) => ({
   connected: false,
   guardianSidebarOpen: false,
+  sidebarOpen: false,
   system: null,
   systemHistory: [],
   docker: null,
@@ -50,6 +54,8 @@ export const useOrbitStore = create<OrbitState>((set) => ({
   logs: [],
   setGuardianSidebarOpen: (guardianSidebarOpen) => set({ guardianSidebarOpen }),
   toggleGuardianSidebar: () => set((state) => ({ guardianSidebarOpen: !state.guardianSidebarOpen })),
+  setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setConnected: (connected) =>
     set((state) => (state.connected === connected ? state : { connected })),
   setSystem: (system) =>
