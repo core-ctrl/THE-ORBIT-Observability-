@@ -4,21 +4,42 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Public routes that don't need auth
-  const publicRoutes = ['/login', '/register', '/', '/status', '/api', '/auth'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route) || pathname === '/');
-  
-  if (isPublicRoute) {
+  // 1. Static asset bypass
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') ||
+    pathname === '/favicon.ico'
+  ) {
+    return NextResponse.next();
+  }
+
+  // 2. Exact public routes and public prefixes
+  const exactPublicRoutes = ['/', '/login', '/register', '/status'];
+  const publicPrefixes = ['/api', '/auth', '/verify'];
+
+  const isPublic =
+    exactPublicRoutes.includes(pathname) ||
+    publicPrefixes.some((prefix) => pathname.startsWith(prefix));
+
+  if (isPublic) {
     return NextResponse.next();
   }
 
   const token = request.cookies.get('orbit.token')?.value;
-  
-  // Enforce true cookie-based authentication
-  if (!token && pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url));
+
+  // 3. Enforce authentication on protected routes (dashboard, settings, onboarding)
+  const isProtectedRoute =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/onboarding');
+
+  if (!token && isProtectedRoute) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
-  
+
   return NextResponse.next();
 }
 
