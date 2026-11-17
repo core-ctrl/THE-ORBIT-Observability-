@@ -18,6 +18,7 @@ export function useHealth() {
     queryFn: api.databases,
     enabled: !connected,
     refetchInterval: connected ? false : 30000,
+    refetchIntervalInBackground: false,
     staleTime: 20000
   });
 
@@ -26,6 +27,7 @@ export function useHealth() {
     queryFn: api.ssl,
     enabled: !connected,
     refetchInterval: connected ? false : 60000,
+    refetchIntervalInBackground: false,
     staleTime: 40000
   });
 
@@ -34,6 +36,7 @@ export function useHealth() {
     queryFn: api.alerts,
     enabled: !connected,
     refetchInterval: connected ? false : 30000,
+    refetchIntervalInBackground: false,
     staleTime: 20000
   });
 

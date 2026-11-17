@@ -16,7 +16,7 @@ export default function SettingsLayout({
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between h-14 px-4 border-b border-white/10 bg-black sticky top-0 z-40">
           <OrbitLogo href="/dashboard" size="sm" />
-          <Link 
+          <Link
             href="/dashboard"
             className="flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
           >

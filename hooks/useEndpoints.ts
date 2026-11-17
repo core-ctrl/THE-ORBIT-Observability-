@@ -15,6 +15,7 @@ export function useEndpoints() {
     queryFn: api.endpoints,
     enabled: !connected,
     refetchInterval: connected ? false : 15000,
+    refetchIntervalInBackground: false,
     staleTime: 10000
   });
 
@@ -37,6 +38,7 @@ export function useEndpointHistory(name: string) {
     queryKey: ["endpoint-history", name],
     queryFn: () => api.endpointHistory(name),
     enabled: Boolean(name),
-    refetchInterval: 15000
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false
   });
 }

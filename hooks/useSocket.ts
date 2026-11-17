@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { api, getToken } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useOrbitStore } from "@/store/orbitStore";
 
 function getWsUrl(): string {
@@ -16,16 +16,22 @@ function getWsUrl(): string {
 
 let wsRef: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let backgroundSuspendTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function useSocket(): void {
   useEffect(() => {
     let unmounted = false;
     let isPolling = true;
 
-    // Resilient fallback HTTP polling: only polls if WebSocket is NOT connected
+    // Resilient fallback HTTP polling: skips when WS is streaming or tab is hidden
     const pollBackend = async () => {
       if (!isPolling || unmounted) return;
       
+      // Stop background activities when tab is not in use to save RAM and CPU
+      if (typeof document !== "undefined" && document.hidden) {
+        return;
+      }
+
       // If WebSocket is active and streaming, skip redundant HTTP requests
       if (wsRef && wsRef.readyState === WebSocket.OPEN) {
         return;
@@ -72,22 +78,23 @@ export function useSocket(): void {
         if (hasData) {
           useOrbitStore.getState().setConnected(true);
         }
-      } catch (err) {
+      } catch {
         if (!wsRef || wsRef.readyState !== WebSocket.OPEN) {
           useOrbitStore.getState().setConnected(false);
         }
       }
     };
 
-    // Immediate initial sync to populate widgets on first load
+    // Immediate initial sync on mount
     pollBackend();
 
-    // Fallback polling runs every 5 seconds, but skips when WebSocket is streaming
+    // Fallback polling runs every 5s, but skips if WS is active or tab is hidden
     const pollInterval = setInterval(pollBackend, 5000);
 
-    // Native RFC 6455 WebSocket connection matching telemetry stream
+    // Native RFC 6455 WebSocket connection
     function connectWs() {
       if (unmounted) return;
+      if (typeof document !== "undefined" && document.hidden) return;
       if (wsRef && (wsRef.readyState === WebSocket.OPEN || wsRef.readyState === WebSocket.CONNECTING)) {
         return;
       }
@@ -98,11 +105,13 @@ export function useSocket(): void {
         wsRef = ws;
 
         ws.onopen = () => {
-          console.log("[Orbit] Native Telemetry WebSocket connected & active");
           useOrbitStore.getState().setConnected(true);
         };
 
         ws.onmessage = (event) => {
+          // Immediately drop processing if tab is hidden to prevent RAM growth & re-renders
+          if (typeof document !== "undefined" && document.hidden) return;
+
           try {
             const payload = JSON.parse(event.data);
             const { event: evt, data } = payload;
@@ -128,18 +137,18 @@ export function useSocket(): void {
         };
 
         ws.onerror = () => {
-          // Fallback HTTP polling automatically continues
+          // Fallback HTTP polling handles recovery
         };
 
         ws.onclose = () => {
           wsRef = null;
-          if (!unmounted) {
+          if (!unmounted && typeof document !== "undefined" && !document.hidden) {
             reconnectTimer = setTimeout(connectWs, 3000);
           }
         };
       } catch {
         wsRef = null;
-        if (!unmounted) {
+        if (!unmounted && typeof document !== "undefined" && !document.hidden) {
           reconnectTimer = setTimeout(connectWs, 3000);
         }
       }
@@ -147,11 +156,39 @@ export function useSocket(): void {
 
     connectWs();
 
+    // Page Visibility API handler: suspend background activities when inactive
+    const handleVisibilityChange = () => {
+      if (typeof document === "undefined") return;
+
+      if (document.hidden) {
+        // Tab moved to background: schedule socket suspension after 60s to free RAM
+        if (backgroundSuspendTimer) clearTimeout(backgroundSuspendTimer);
+        backgroundSuspendTimer = setTimeout(() => {
+          if (wsRef) {
+            wsRef.close();
+            wsRef = null;
+          }
+        }, 60000);
+      } else {
+        // User returned to tab: cancel suspend timer, reconnect WS, and sync state immediately
+        if (backgroundSuspendTimer) {
+          clearTimeout(backgroundSuspendTimer);
+          backgroundSuspendTimer = null;
+        }
+        pollBackend();
+        connectWs();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       unmounted = true;
       isPolling = false;
       clearInterval(pollInterval);
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (backgroundSuspendTimer) clearTimeout(backgroundSuspendTimer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (wsRef) {
         wsRef.close();
         wsRef = null;

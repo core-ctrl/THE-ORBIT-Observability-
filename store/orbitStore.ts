@@ -88,7 +88,7 @@ export const useOrbitStore = create<OrbitState>((set) => ({
       };
       const normalized: SystemMetric = Object.assign({}, defaults, system);
       if (!Array.isArray(normalized.cpu_per_core)) normalized.cpu_per_core = [];
-      return { system: normalized, systemHistory: [...state.systemHistory, normalized].slice(-40) };
+      return { system: normalized, systemHistory: [...state.systemHistory, normalized].slice(-30) };
     }),
   setDocker: (docker, containers) =>
     set((state) => {
@@ -154,6 +154,6 @@ export const useOrbitStore = create<OrbitState>((set) => ({
       return { ssl };
     }),
   setAlerts: (alerts) => set({ alerts }),
-  pushAlert: (alert) => set((state) => ({ alerts: [alert, ...state.alerts].slice(0, 100) })),
-  pushLog: (log) => set((state) => ({ logs: [log, ...state.logs].slice(0, 200) }))
+  pushAlert: (alert) => set((state) => ({ alerts: [alert, ...state.alerts].slice(0, 50) })),
+  pushLog: (log) => set((state) => ({ logs: [log, ...state.logs].slice(0, 100) }))
 }));
