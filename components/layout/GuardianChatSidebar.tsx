@@ -265,11 +265,12 @@ export function GuardianChatSidebar() {
     let replyData: { text: string; codeSnippet?: string; codeLanguage?: string; badge?: string } | null = null;
 
     try {
-      // Check if local backend endpoint is responsive
+      // Check if Guardian backend endpoint is responsive
+      const guardianBase = process.env.NEXT_PUBLIC_GUARDIAN_URL || "http://localhost:8020";
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1200);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-      const res = await fetch("http://localhost:8020/api/v1/guardian/chat", {
+      const res = await fetch(`${guardianBase}/api/v1/guardian/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
