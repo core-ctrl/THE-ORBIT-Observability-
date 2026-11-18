@@ -17,6 +17,49 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
   return (
     <html lang="en" className={GeistSans.className}>
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              /* ── Universal Scrollbar Elimination ── */
+              html, body, *, *::before, *::after {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+              }
+              ::-webkit-scrollbar,
+              *::-webkit-scrollbar,
+              html::-webkit-scrollbar,
+              body::-webkit-scrollbar,
+              textarea::-webkit-scrollbar,
+              div::-webkit-scrollbar {
+                display: none !important;
+                width: 0px !important;
+                height: 0px !important;
+                background: transparent !important;
+                opacity: 0 !important;
+              }
+              ::-webkit-scrollbar-button,
+              *::-webkit-scrollbar-button,
+              textarea::-webkit-scrollbar-button {
+                display: none !important;
+                width: 0px !important;
+                height: 0px !important;
+              }
+              ::-webkit-scrollbar-track,
+              *::-webkit-scrollbar-track,
+              ::-webkit-scrollbar-thumb,
+              *::-webkit-scrollbar-thumb,
+              ::-webkit-scrollbar-corner,
+              *::-webkit-scrollbar-corner,
+              ::-webkit-resizer,
+              *::-webkit-resizer {
+                display: none !important;
+                background: transparent !important;
+              }
+            `,
+          }}
+        />
+      </head>
       <body className="bg-primary text-primary antialiased min-h-screen">
         <Providers>{children}</Providers>
       </body>

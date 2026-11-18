@@ -573,7 +573,10 @@ export function GuardianChatSidebar() {
 
         {/* Quick Suggestion Chips */}
         <div className="px-3 py-2 border-t border-white/10 bg-zinc-950 shrink-0">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
+          <div
+            className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar-button]:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
             {STARTER_PROMPTS.map((starter) => (
               <button
                 key={starter.label}
@@ -606,8 +609,8 @@ export function GuardianChatSidebar() {
               onKeyDown={handleKeyDown}
               placeholder="Ask Guardian (e.g., scan security, check CPU spike, or in Telugu)..."
               rows={1}
-              className="flex-1 bg-transparent border-0 outline-none resize-none text-xs text-white placeholder-zinc-500 max-h-24 py-1 overflow-hidden no-scrollbar"
-              style={{ minHeight: "24px" }}
+              className="flex-1 bg-transparent border-0 outline-none resize-none text-xs text-white placeholder-zinc-500 max-h-24 py-1 overflow-hidden no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar-button]:hidden"
+              style={{ minHeight: "24px", overflow: "hidden", scrollbarWidth: "none", msOverflowStyle: "none" }}
             />
 
             <button

@@ -1,0 +1,141 @@
+{
+  "target_application": "Movie Finder v2 (C:\\movie-finder-v2 - Copy (2))",
+  "project_id": "65ef4474-3d41-40a6-b6f3-c8e8672dbafd",
+  "dsn_key": "136c137a75e54d3391f51d6e60ce57e3",
+  "phases": {
+    "phase_1_orbit_architecture": {
+      "status": "PASS",
+      "java_status": "UP",
+      "python_status": "healthy",
+      "ui_http_status": 200
+    },
+    "phase_2_connection": {
+      "status": "PASS",
+      "movie_finder_status": "OK",
+      "project_registered_in_orbit": true
+    },
+    "phase_3_baseline": {
+      "status": "PASS",
+      "home_status": 200,
+      "catalog_status": 200,
+      "baseline_latency_ms": 8739.48,
+      "false_positives_detected": 0
+    },
+    "phase_5_pipeline_verification": {
+      "status": "PASS",
+      "db_issues_count": 7,
+      "api_issues_count": 7,
+      "issues": [
+        {
+          "title": "Movie Finder Orbit SDK Link Established",
+          "type": "InitVerification",
+          "times_seen": 1
+        },
+        {
+          "title": "Cannot read properties of null (reading 'featured')",
+          "type": "TypeError",
+          "times_seen": 1
+        },
+        {
+          "title": "Database connection pool exhausted while fetching movie metadata",
+          "type": "ApiError",
+          "times_seen": 1
+        },
+        {
+          "title": "Unhandled Rejection in Movie Recommendation Pipeline: Timeout waiting for embedding model",
+          "type": "UnhandledRejection",
+          "times_seen": 1
+        },
+        {
+          "title": "Sensitive context sanitization verification",
+          "type": "SecurityContext",
+          "times_seen": 1
+        },
+        {
+          "title": "React Error Boundary caught fatal crash in MovieCard",
+          "type": "ReactRenderError",
+          "times_seen": 1
+        },
+        {
+          "title": "Queued telemetry flushed on client reconnect",
+          "type": "OfflineQueuedEvent",
+          "times_seen": 1
+        }
+      ]
+    }
+  },
+  "fault_matrix": {
+    "Category A": {
+      "name": "Frontend JavaScript TypeError",
+      "success": true,
+      "latency_ms": 263.3,
+      "details": "Ingested with HTTP 202, event queued: 7331da52-89fa-489e-b06b-14f8ad8e040c"
+    },
+    "Category B": {
+      "name": "HTTP / API Failure (500 Error)",
+      "success": true,
+      "latency_ms": 534.25,
+      "details": "Triggered MF HTTP 500 & Ingested into Orbit: e80f4b74-f608-4015-b732-9adb021a3c9c"
+    },
+    "Category C": {
+      "name": "Unhandled Promise Rejection",
+      "success": true,
+      "latency_ms": 8.77,
+      "details": "Ingested with HTTP 202, event: 05607904-7204-4da0-8b35-1da047c8d0ce"
+    },
+    "Category D": {
+      "name": "Performance / APM Trace",
+      "success": true,
+      "latency_ms": 2262.31,
+      "details": "Triggered slow endpoint (2200ms) & Ingested APM transaction"
+    },
+    "Category E": {
+      "name": "Application Log Stream",
+      "success": true,
+      "latency_ms": 99.95,
+      "details": "Ingested application log into Orbit log stream: 202"
+    },
+    "Category F": {
+      "name": "Security Data Sanitization",
+      "success": true,
+      "latency_ms": 25.46,
+      "details": "Dispatched sensitive context payload: HTTP 202"
+    },
+    "Category G": {
+      "name": "React Lifecycle Crash",
+      "success": true,
+      "latency_ms": 12.4,
+      "details": "Dispatched React Error Boundary crash: HTTP 202"
+    },
+    "Category H": {
+      "name": "Offline Telemetry Queueing",
+      "success": true,
+      "latency_ms": 10.96,
+      "details": "Client offline queue drain flushed: HTTP 202"
+    }
+  },
+  "guardian_diagnostics": {
+    "Database Connection Pool Exhaustion (Category B)": {
+      "status": "PASS",
+      "model": "local-instruct-qwen",
+      "latency_ms": 17769.09,
+      "action_items": [
+        "Review the affected endpoint traces",
+        "Verify database connection pool limits"
+      ],
+      "summary": "The error message indicates that the database connection pool is exhausted while trying to fetch movie metadata. This typically happens when the pool is full and cannot accommodate new connections. To..."
+    },
+    "Frontend Null Pointer / TypeError (Category A)": {
+      "status": "PASS",
+      "model": "local-instruct-qwen",
+      "latency_ms": 21713.44,
+      "action_items": [
+        "Review the affected endpoint traces",
+        "Verify database connection pool limits"
+      ],
+      "summary": "To address the TypeError in the Hero component caused by trying to access the 'featured' property of a null object, you need to ensure that the 'featured' property is properly initialized before acces..."
+    }
+  },
+  "realtime_monitoring": {},
+  "overall_verdict": "PASS"
+}
