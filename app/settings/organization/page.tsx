@@ -17,11 +17,13 @@ export default function OrganizationSettingsPage() {
   const fetchStatusPageConfig = useCallback(async (id: string) => {
     try {
       const data = await api.statusPageConfig(id);
-      setStatusTitle(data.title || "");
-      setStatusSlug(data.slug || "");
-      setIsPublicPage(data.is_public);
-    } catch (e) {
-      console.error(e);
+      setStatusTitle(data?.title || "Orbit Operational Status");
+      setStatusSlug(data?.slug || "orbit-status");
+      setIsPublicPage(data?.is_public ?? true);
+    } catch {
+      setStatusTitle("Orbit Operational Status");
+      setStatusSlug("orbit-status");
+      setIsPublicPage(true);
     }
   }, []);
 

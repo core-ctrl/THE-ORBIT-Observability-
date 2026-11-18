@@ -376,6 +376,7 @@ export default function ProjectsPage({
             onClick={() => loadProjects()}
             className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition"
             title="Refresh projects"
+            aria-label="Refresh projects list"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -608,6 +609,7 @@ export default function ProjectsPage({
                     <button
                       type="button"
                       title={`Delete ${p.name}`}
+                      aria-label={`Delete project ${p.name}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setProjectToDelete(p);
@@ -645,8 +647,11 @@ export default function ProjectsPage({
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsCreateOpen(false)}
                 className="text-white/40 hover:text-white text-base px-2 py-1 rounded-md"
+                aria-label="Close modal"
+                title="Close"
               >
                 ✕
               </button>

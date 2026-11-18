@@ -1,0 +1,94 @@
+[
+  {
+    "id": "ORB-QA-001",
+    "title": "Missing Backend Endpoint for Org Status Page Config (GET /api/v1/organizations/{id}/status)",
+    "severity": "P2",
+    "priority": "High",
+    "category": "Integration / Backend API Failure",
+    "route": "/settings/organization",
+    "component": "OrganizationSettingsPage (fetchStatusPageConfig)",
+    "description": "When navigating to /settings/organization, api.statusPageConfig(orgId) requests GET /api/v1/organizations/{id}/status which returns HTTP 500 because the controller route is not implemented in the backend.",
+    "steps": [
+      "Navigate to http://localhost:3003/settings/organization",
+      "Inspect DevTools network tab",
+      "Observe HTTP 500 error on GET /api/v1/organizations/{id}/status"
+    ],
+    "expected": "HTTP 200 with status page JSON or safe fallback defaults",
+    "actual": "HTTP 500 Internal Server Error (No static resource)",
+    "http_status": 500,
+    "endpoint": "/api/v1/organizations/{id}/status",
+    "screenshot": "screenshots/route_settings_organization.png",
+    "reproducible": true,
+    "suggested_fix": "Implement @GetMapping('/organizations/{orgId}/status') in backend and add .catch() fallback in frontend",
+    "confidence": "High"
+  },
+  {
+    "id": "ORB-QA-002",
+    "title": "Missing Favicon Static Asset Returns HTTP 404",
+    "severity": "P3",
+    "priority": "Low",
+    "category": "Missing Static Asset",
+    "route": "Global",
+    "component": "app/layout.tsx",
+    "description": "Browser requests /favicon.ico on document load, which returns HTTP 404 Not Found.",
+    "steps": [
+      "Open any page at http://localhost:3003",
+      "Check network tab for favicon.ico",
+      "Observe HTTP 404"
+    ],
+    "expected": "HTTP 200 with branded icon file",
+    "actual": "HTTP 404 Not Found",
+    "http_status": 404,
+    "endpoint": "/favicon.ico",
+    "screenshot": "screenshots/01_login_page.png",
+    "reproducible": true,
+    "suggested_fix": "Add public/favicon.ico or app/icon.png",
+    "confidence": "High"
+  },
+  {
+    "id": "ORB-QA-003",
+    "title": "Missing Accessible aria-label Attributes on Icon-Only Buttons",
+    "severity": "P3",
+    "priority": "Medium",
+    "category": "Accessibility (WCAG 2.1 AA)",
+    "route": "/dashboard/[projectId]/projects",
+    "component": "app/dashboard/[projectId]/projects/page.tsx",
+    "description": "Action icon buttons lack text or aria-label attributes, causing screen readers to announce them as empty buttons.",
+    "steps": [
+      "Navigate to /dashboard/[projectId]/projects",
+      "Inspect table action buttons",
+      "Observe missing aria-label attributes on icon-only buttons"
+    ],
+    "expected": "All icon-only buttons provide descriptive aria-label attributes",
+    "actual": "Buttons contain only SVG icons with no accessible label",
+    "http_status": null,
+    "endpoint": null,
+    "screenshot": "screenshots/route_dashboard_5a1ad541-9132-47b1-b70d-72e72f47b16a_projects.png",
+    "reproducible": true,
+    "suggested_fix": "Add aria-label and title attributes to all button elements",
+    "confidence": "High"
+  },
+  {
+    "id": "ORB-QA-004",
+    "title": "Project Creation Wizard Step 1 Missing Explicit Bottom Cancel Button",
+    "severity": "P4",
+    "priority": "Low",
+    "category": "Usability / UX Flow",
+    "route": "/dashboard/[projectId]/projects",
+    "component": "app/dashboard/[projectId]/projects/page.tsx",
+    "description": "Step 1 of the New Project modal does not provide an explicit Cancel button in the bottom action bar, requiring users to use the top-right X or Esc key.",
+    "steps": [
+      "Click '+ NEW PROJECT' on projects page",
+      "Observe bottom footer controls",
+      "Notice absence of a Cancel button"
+    ],
+    "expected": "Secondary Cancel button placed alongside primary progression button",
+    "actual": "Only primary 'Next: Connect SDK ->' button exists in footer",
+    "http_status": null,
+    "endpoint": null,
+    "screenshot": "screenshots/crud_01_create_project_modal.png",
+    "reproducible": true,
+    "suggested_fix": "Add secondary Cancel button to dismiss modal",
+    "confidence": "Medium"
+  }
+]
