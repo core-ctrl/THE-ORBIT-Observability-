@@ -52,11 +52,12 @@ export default async function handler(req, res) {
     path: "lib/orbit.js",
     name: "orbit.js",
     language: "javascript",
-    content: `import { initOrbit } from "@orbit/sdk";
+    content: `import { initOrbit } from "orbit-observability";
 
 // Initialize Orbit Observability SDK for production
 export const orbit = initOrbit({
   dsn: process.env.NEXT_PUBLIC_ORBIT_DSN,
+  endpoint: process.env.NEXT_PUBLIC_ORBIT_ENDPOINT || "http://localhost:8000",
   environment: process.env.NODE_ENV || "production",
   tracesSampleRate: 1.0,
 });
@@ -602,7 +603,7 @@ export default function CloudIDEPage({ params }: { params: Promise<{ projectId: 
             <div className="space-y-1.5">
               <span className="text-[11px] font-mono text-zinc-400">Terminal Command:</span>
               <pre className="p-3 rounded-lg bg-black border border-white/15 font-mono text-xs text-zinc-200">
-                npx @orbit/sentinel --watch
+                npx orbit-observability --watch
               </pre>
             </div>
 

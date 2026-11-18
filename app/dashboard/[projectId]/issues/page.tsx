@@ -194,16 +194,16 @@ export default function IssuesPage({ params }: { params: Promise<{ projectId: st
                 <span className="text-zinc-400">
                   <span className="text-white mr-2">$</span>
                   <span className="text-zinc-200">
-                    {sdkTab === "nextjs" ? "npm install @orbit-sdk/nextjs" :
+                    {sdkTab === "nextjs" ? "npm install orbit-observability" :
                      sdkTab === "python" ? "pip install orbit-observability" :
-                     "npm install @orbitapp/node"}
+                     "npm install orbit-observability"}
                   </span>
                 </span>
                 <button
                   onClick={() => {
-                    const cmd = sdkTab === "nextjs" ? "npm install @orbit-sdk/nextjs" :
+                    const cmd = sdkTab === "nextjs" ? "npm install orbit-observability" :
                                 sdkTab === "python" ? "pip install orbit-observability" :
-                                "npm install @orbitapp/node";
+                                "npm install orbit-observability";
                     navigator.clipboard.writeText(cmd);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
@@ -219,9 +219,10 @@ export default function IssuesPage({ params }: { params: Promise<{ projectId: st
               <pre className="p-4 text-xs font-mono text-zinc-300 overflow-x-auto leading-relaxed bg-black">
                 {sdkTab === "nextjs" && (
                   <>
-                    <code className="block text-zinc-400">import <span className="text-white">{'{'}</span> initOrbit <span className="text-white">{'}'}</span> from <span className="text-zinc-300">&quot;@orbit-sdk/nextjs&quot;</span>;</code>
+                    <code className="block text-zinc-400">import <span className="text-white">{'{'}</span> initOrbit <span className="text-white">{'}'}</span> from <span className="text-zinc-300">&quot;orbit-observability&quot;</span>;</code>
                     <code className="block mt-2"><span className="text-white font-semibold">initOrbit</span>({'{'}</code>
-                    <code className="block pl-4 text-zinc-400">dsn: <span className="text-zinc-300">&quot;http://localhost:8010/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">dsn: <span className="text-zinc-300">&quot;http://localhost:8000/ingest/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">endpoint: <span className="text-zinc-300">&quot;http://localhost:8000&quot;</span>,</code>
                     <code className="block pl-4 text-zinc-400">environment: <span className="text-zinc-300">&quot;production&quot;</span>,</code>
                     <code className="block pl-4 text-zinc-400">tracesSampleRate: <span className="text-white">1.0</span></code>
                     <code className="block text-white">{'}'});</code>
@@ -231,7 +232,8 @@ export default function IssuesPage({ params }: { params: Promise<{ projectId: st
                   <>
                     <code className="block text-zinc-400">import <span className="text-white">orbit_observability</span> as orbit</code>
                     <code className="block mt-2">orbit.<span className="text-white font-semibold">init</span>(</code>
-                    <code className="block pl-4 text-zinc-400">dsn=<span className="text-zinc-300">&quot;http://localhost:8010/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">dsn=<span className="text-zinc-300">&quot;http://localhost:8000/ingest/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">endpoint=<span className="text-zinc-300">&quot;http://localhost:8000&quot;</span>,</code>
                     <code className="block pl-4 text-zinc-400">environment=<span className="text-zinc-300">&quot;production&quot;</span>,</code>
                     <code className="block pl-4 text-zinc-400">auto_instrument_fastapi=<span className="text-white">True</span></code>
                     <code className="block text-white">)</code>
@@ -239,9 +241,10 @@ export default function IssuesPage({ params }: { params: Promise<{ projectId: st
                 )}
                 {sdkTab === "node" && (
                   <>
-                    <code className="block text-zinc-400">const <span className="text-white">Orbit</span> = <span className="text-white font-semibold">require</span>(<span className="text-zinc-300">&quot;@orbitapp/node&quot;</span>);</code>
+                    <code className="block text-zinc-400">const <span className="text-white">Orbit</span> = <span className="text-white font-semibold">require</span>(<span className="text-zinc-300">&quot;orbit-observability&quot;</span>);</code>
                     <code className="block mt-2">Orbit.<span className="text-white font-semibold">init</span>({'{'}</code>
-                    <code className="block pl-4 text-zinc-400">dsn: <span className="text-zinc-300">&quot;http://localhost:8010/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">dsn: <span className="text-zinc-300">&quot;http://localhost:8000/ingest/{projectId}&quot;</span>,</code>
+                    <code className="block pl-4 text-zinc-400">endpoint: <span className="text-zinc-300">&quot;http://localhost:8000&quot;</span>,</code>
                     <code className="block pl-4 text-zinc-400">environment: <span className="text-zinc-300">&quot;production&quot;</span></code>
                     <code className="block text-white">{'}'});</code>
                   </>

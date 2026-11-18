@@ -59,7 +59,8 @@ pip install -e C:\\Orbit-SDKs\\orbit-python`;
   const pythonInit = `import orbit_python
 
 orbit_python.init(
-    dsn="http://localhost:8010/YOUR_PROJECT_KEY",
+    dsn="http://localhost:8000/ingest/YOUR_PROJECT_KEY",
+    endpoint="http://localhost:8000",
     environment="production",
     release="v1.0.4"
 )
@@ -74,12 +75,13 @@ try:
 except Exception as e:
     orbit_python.capture_exception(e, extra={"query_timeout_ms": 5000})`;
 
-  const nodeInstall = `npm install @orbit-sdk/node`;
+  const nodeInstall = `npm install orbit-observability`;
 
-  const nodeInit = `const { init, captureException, startSpan } = require("@orbit-sdk/node");
+  const nodeInit = `const { init, captureException, startSpan } = require("orbit-observability");
 
 init({
-  dsn: "http://localhost:8010/YOUR_PROJECT_KEY",
+  dsn: "http://localhost:8000/ingest/YOUR_PROJECT_KEY",
+  endpoint: "http://localhost:8000",
   serviceName: "payment-gateway",
   environment: "production",
 });
@@ -98,18 +100,18 @@ docker run -d \\
   --restart always \\
   -v /var/run/docker.sock:/var/run/docker.sock \\
   -e ORBIT_DSN="YOUR_PROJECT_KEY" \\
-  -e ORBIT_ENDPOINT="http://localhost:8010" \\
+  -e ORBIT_ENDPOINT="http://localhost:8000" \\
   orbit-agent:latest`;
 
   const agentPython = `# Or run directly with Python:
 cd C:\\Orbit-SDKs\\orbit-agent
 pip install -r requirements.txt
 $env:ORBIT_DSN="YOUR_PROJECT_KEY"
-$env:ORBIT_ENDPOINT="http://localhost:8010"
+$env:ORBIT_ENDPOINT="http://localhost:8000"
 py agent.py`;
 
   const apiEndpoints = `// 1. Ingest Unhandled Exception
-POST http://localhost:8010/ingest/v1/events
+POST http://localhost:8000/ingest/v1/events
 Content-Type: application/json
 
 {
@@ -123,7 +125,7 @@ Content-Type: application/json
 }
 
 // 2. Report Host Agent Metrics
-POST http://localhost:8010/ingest/v1/events
+POST http://localhost:8000/ingest/v1/events
 {
   "api_key": "YOUR_PROJECT_KEY",
   "type": "AgentMetrics",

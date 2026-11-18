@@ -662,10 +662,11 @@ export default function ProjectDetailsPage({
                 Initialization Code Snippet
               </label>
               <pre className="p-4 rounded-[14px] bg-black/70 border border-white/10 text-[11px] font-mono text-white/85 overflow-x-auto leading-relaxed">
-{`import { initOrbit } from "@orbit/nextjs";
+{`import { initOrbit, OrbitErrorBoundary } from "orbit-observability";
 
 initOrbit({
   dsn: "${dsnValue}",
+  endpoint: "http://localhost:8000",
   environment: "${project.environment || "production"}",
   tracesSampleRate: 1.0,
 });`}

@@ -208,10 +208,11 @@ export default function OnboardingPage(): JSX.Element {
                   <span className="ml-2 text-[10px] font-mono text-white/40">app.tsx</span>
                 </div>
                 <div className="p-5 font-mono text-xs leading-relaxed text-white/80 overflow-x-auto">
-                  <div className="text-[#a7ff2f]">import <span className="text-white">{`{ initOrbit }`}</span> from <span className="text-[#04d9ff]">{"'@orbit-sdk/" + platform + "'"}</span>;</div>
+                  <div className="text-[#a7ff2f]">import <span className="text-white">{`{ initOrbit }`}</span> from <span className="text-[#04d9ff]">&quot;orbit-observability&quot;</span>;</div>
                   <br />
                   <div className="text-white">initOrbit{`({`}</div>
                   <div className="pl-4 text-white/50">dsn: <span className="text-[#a7ff2f]">{`'${dsn}'`}</span>,</div>
+                  <div className="pl-4 text-white/50">endpoint: <span className="text-[#a7ff2f]">'http://localhost:8000'</span>,</div>
                   <div className="pl-4 text-white/50">environment: <span className="text-[#a7ff2f]">'production'</span>,</div>
                   <div className="text-white">{`});`}</div>
                 </div>

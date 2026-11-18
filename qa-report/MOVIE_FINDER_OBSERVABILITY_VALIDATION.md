@@ -17,7 +17,7 @@ This audit answered the core question:
 | Observability Dimension | Target Requirement | Measured Result | Verdict |
 | :--- | :--- | :--- | :---: |
 | **Project Registration** | Dedicated project onboarding via API/UI | Project `Movie Finder v2` created with unique DSN | **PASS** |
-| **SDK Integration** | Client library telemetry hookup | `@orbit-sdk/nextjs` initialized with fallback resilience | **PASS** |
+| **SDK Integration** | Client library telemetry hookup | `orbit-observability` initialized with fallback resilience | **PASS** |
 | **Baseline Stability** | Zero false-positive error triggers | Normal browsing produced 0 false alarms | **PASS** |
 | **Cat A: Frontend Exceptions** | Unhandled `TypeError` capture | Stack trace, file, line number, culprit isolated | **PASS** |
 | **Cat B: HTTP/API Failures** | HTTP 500 DB connection pool error | HTTP status, requested route, response payload captured | **PASS** |
@@ -37,7 +37,7 @@ This audit answered the core question:
 flowchart LR
     subgraph TargetApp ["Movie Finder v2 (Port 3005)"]
         UI["React 18 / Next.js 14 Pages"]
-        SDK["@orbit-sdk/nextjs"]
+        SDK["orbit-observability"]
         ErrB["OrbitErrorBoundary"]
         API["/api/movies/simulate-error"]
         UI --> ErrB --> SDK

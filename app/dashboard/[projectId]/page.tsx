@@ -224,7 +224,7 @@ export default function OverviewPage({
             </p>
 
             <div className="p-2 rounded bg-black border border-white/20 font-mono text-[11px] text-zinc-300 select-all">
-              npm install @orbit/nextjs
+              npm install orbit-observability
             </div>
 
             <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">

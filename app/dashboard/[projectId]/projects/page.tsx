@@ -311,9 +311,9 @@ export default function ProjectsPage({
 
     if (p.includes("node")) {
       return {
-        installCmd: "npm install @orbit/node",
+        installCmd: "npm install orbit-observability",
         filename: "server.js",
-        code: `const { initOrbit } = require('@orbit/node');\n\ninitOrbit({\n  dsn: "${dsn}",\n  environment: "${env}",\n});`,
+        code: `const { initOrbit } = require('orbit-observability');\n\ninitOrbit({\n  dsn: "${dsn}",\n  endpoint: "http://localhost:8000",\n  environment: "${env}",\n});`,
       };
     }
     if (p.includes("py") || p.includes("fastapi")) {
@@ -332,9 +332,9 @@ export default function ProjectsPage({
     }
     if (p.includes("react")) {
       return {
-        installCmd: "npm install @orbit/react",
+        installCmd: "npm install orbit-observability",
         filename: "App.tsx",
-        code: `import { initOrbit } from '@orbit/react';\n\ninitOrbit({\n  dsn: "${dsn}",\n  environment: "${env}",\n});`,
+        code: `import { initOrbit } from 'orbit-observability';\n\ninitOrbit({\n  dsn: "${dsn}",\n  endpoint: "http://localhost:8000",\n  environment: "${env}",\n});`,
       };
     }
     return {
