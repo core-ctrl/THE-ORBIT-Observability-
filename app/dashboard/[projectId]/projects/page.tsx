@@ -64,9 +64,22 @@ export default function ProjectsPage({
         orgId = cur?.org_id || cur?.orgId;
       } catch {}
 
+      if (!orgId) {
+        try {
+          const orgs = await api.organizations();
+          if (orgs && orgs.length > 0) orgId = orgs[0].id;
+        } catch {}
+      }
+
       const projects = await api.projects(orgId);
       const list = Array.isArray(projects) ? projects : [];
       setRawProjects(list);
+
+      // Auto-heal route if current project in URL was deleted
+      if (list.length > 0 && !list.some((p) => p.id === currentWorkspaceProjectId)) {
+        router.replace(`/dashboard/${list[0].id}/projects`);
+        return;
+      }
 
       const statsMap: Record<string, { issuesCount: number; deploymentsCount: number }> = {};
       await Promise.allSettled(
@@ -227,11 +240,11 @@ export default function ProjectsPage({
       }
 
       const deletedId = projectToDelete.id;
-      setRawProjects((prev) => prev.filter((p) => p.id !== deletedId));
+      const remaining = rawProjects.filter((p) => p.id !== deletedId);
+      setRawProjects(remaining);
       setProjectToDelete(null);
 
-      if (deletedId === currentWorkspaceProjectId) {
-        const remaining = rawProjects.filter((p) => p.id !== deletedId);
+      if (deletedId === currentWorkspaceProjectId || !remaining.some((p) => p.id === currentWorkspaceProjectId)) {
         if (remaining.length > 0) {
           router.push(`/dashboard/${remaining[0].id}/projects`);
         } else {

@@ -98,8 +98,22 @@ export function Sidebar() {
           const projects = await api.projects(projectData.org_id);
           if (Array.isArray(projects)) setProjectsList(projects);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
+        // Project ID in URL no longer exists (e.g. was deleted)
+        // Gracefully locate the first valid project and navigate to it
+        try {
+          const orgs = await api.organizations();
+          if (orgs && orgs.length > 0) {
+            const allProjects = await api.projects(orgs[0].id);
+            if (Array.isArray(allProjects) && allProjects.length > 0) {
+              const fallback = allProjects[0];
+              if (fallback.id !== projectId) {
+                router.replace(`/dashboard/${fallback.id}/projects`);
+                return;
+              }
+            }
+          }
+        } catch { }
       }
 
       try {
