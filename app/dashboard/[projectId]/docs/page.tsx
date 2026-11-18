@@ -25,15 +25,16 @@ export default function DocsPage({ params }: { params?: Promise<{ projectId: str
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const nextjsInstall = `npm install @orbit-sdk/nextjs
+  const nextjsInstall = `npm install orbit-observability
 # or
-pnpm add @orbit-sdk/nextjs`;
+pnpm add orbit-observability`;
 
   const nextjsInit = `// app/layout.tsx or pages/_app.tsx
-import { initOrbit } from "@orbit-sdk/nextjs";
+import { initOrbit, OrbitErrorBoundary } from "orbit-observability";
 
 initOrbit({
-  dsn: "http://localhost:8010/YOUR_PROJECT_KEY",
+  dsn: "http://localhost:8000/ingest/YOUR_PROJECT_KEY",
+  endpoint: "http://localhost:8000",
   environment: process.env.NODE_ENV || "production",
   tracesSampleRate: 1.0,
   enableAutoSessionTracking: true,
@@ -42,7 +43,11 @@ initOrbit({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <OrbitErrorBoundary>
+          {children}
+        </OrbitErrorBoundary>
+      </body>
     </html>
   );
 }`;

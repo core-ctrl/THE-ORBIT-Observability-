@@ -338,9 +338,9 @@ export default function ProjectsPage({
       };
     }
     return {
-      installCmd: "npm install @orbit/nextjs",
+      installCmd: "npm install orbit-observability",
       filename: "instrumentation.ts",
-      code: `import { initOrbit } from '@orbit/nextjs';\n\nexport function register() {\n  initOrbit({\n    dsn: "${dsn}",\n    environment: "${env}",\n  });\n}`,
+      code: `import { initOrbit } from 'orbit-observability';\n\nexport function register() {\n  initOrbit({\n    dsn: "${dsn}",\n    endpoint: "http://localhost:8000",\n    environment: "${env}",\n  });\n}`,
     };
   }, [createForm.platform, createForm.environment, generatedDsn]);
 
